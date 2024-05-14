@@ -1,0 +1,20 @@
+Environment: development
+LogLevel: debug
+
+DB:
+  Name: mydb
+  Port: 5432
+  Host: localhost
+  Username: myuser
+  Password: mypassword
+  Params: sslmode=disable
+
+Jwt:
+  Secret: mysecret
+  BcryptSalt: 10
+
+S3:
+  ID: myid
+  SecretKey: mysecret
+  BucketName: mybucket
+  Region: us-east-1

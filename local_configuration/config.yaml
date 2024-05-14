@@ -8,6 +8,8 @@ DB:
   Username: myuser
   Password: mypassword
   Params: sslmode=disable
+  MaxIdleConns: 20
+  MaxOpenConns: 20
 
 Jwt:
   Secret: mysecret

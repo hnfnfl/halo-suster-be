@@ -20,6 +20,8 @@ const (
 	DBUsername = "DB.USERNAME"
 	DBPassword = "DB.PASSWORD"
 	DBParams   = "DB.PARAMS"
+	DBMaxIdle  = "DB.MAXIDLECONNS"
+	DBMaxOpen  = "DB.MAXOPENCONNS"
 
 	JWTSecret = "JWT.SECRET"
 	Salt      = "JWT.BCRYPTSALT"
@@ -64,6 +66,8 @@ type Configuration struct {
 	DBUsername string
 	DBPassword string
 	DBParams   string
+	DBMaxIdle  int
+	DBMaxOpen  int
 
 	JWTSecret string
 	Salt      string
@@ -95,6 +99,15 @@ func NewConfiguration() (*Configuration, error) {
 		Region: viper.GetString(S3Region),
 	}
 
+	maxIdle := viper.GetInt(DBMaxIdle)
+	maxOpen := viper.GetInt(DBMaxOpen)
+	if maxIdle == 0 {
+		maxIdle = 10
+	}
+	if maxOpen == 0 {
+		maxOpen = 20
+	}
+
 	config := &Configuration{
 		Environment: viper.GetString(Environment),
 		LogLevel:    viper.GetString(LogLevel),
@@ -105,6 +118,8 @@ func NewConfiguration() (*Configuration, error) {
 		DBUsername: viper.GetString(DBUsername),
 		DBPassword: viper.GetString(DBPassword),
 		DBParams:   viper.GetString(DBParams),
+		DBMaxIdle:  maxIdle,
+		DBMaxOpen:  maxOpen,
 
 		JWTSecret: viper.GetString(JWTSecret),
 		Salt:      viper.GetString(Salt),

@@ -4,6 +4,9 @@ import "errors"
 
 // nolint::lll
 var (
-	ErrUserNotFound      = errors.New("user not found")
-	ErrPasswordMissmatch = errors.New("password missmatch")
+	ErrUserNotFound         = errors.New("user not found")
+	ErrPasswordMissmatch    = errors.New("password missmatch")
+	ErrInvalidClaimsType    = errors.New("invalid claims type")
+	ErrInvalidToken         = errors.New("invalid token")
+	ErrInvalidSigningMethod = errors.New("invalid signing method algorithm")
 )

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
 )
 
@@ -44,21 +43,4 @@ func NewLogger(logLevel string) (*logrus.Logger, error) {
 	}
 
 	return logger, nil
-}
-
-func ContextLogger(log *logrus.Logger) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		c.Set("LoggerForContext", log)
-		c.Next()
-	}
-}
-
-func FromContext(c *gin.Context) *logrus.Logger {
-	logger, ok := c.Get("LoggerForContext")
-	if !ok {
-		fmt.Println("Logger not found in context")
-		return nil
-	}
-
-	return logger.(*logrus.Logger)
 }

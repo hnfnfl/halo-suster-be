@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"halo-suster/internal/pkg/configuration"
 	"time"
+
+	_ "github.com/lib/pq"
 )
 
 func New(cfg *configuration.Configuration) (*sql.DB, error) {

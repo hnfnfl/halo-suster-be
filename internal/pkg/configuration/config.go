@@ -84,7 +84,6 @@ func NewConfiguration() (*Configuration, error) {
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("error reading config file: %s", err)
 	}
-	// DB.NAME -> DB_NAME
 
 	viper.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 	viper.AutomaticEnv()

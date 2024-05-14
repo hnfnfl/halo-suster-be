@@ -45,5 +45,9 @@ func JWTVerify(cfg *configuration.Configuration, tokenString string) (string, er
 		return "", errs.ErrInvalidClaimsType
 	}
 
+	if claims.ExpiresAt.Before(time.Now()) {
+		return "", errs.ErrTokenExpired
+	}
+
 	return claims.Subject, nil
 }

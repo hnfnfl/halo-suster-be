@@ -1,6 +1,6 @@
 CREATE TYPE user_roles AS ENUM('it', 'nurse');
 
-CREATE TABLE users IF NOT EXISTS (
+CREATE TABLE IF NOT EXISTS users (
   user_id varchar(255) primary key,
   nip varchar(13) unique not null,
   name varchar(50) not null,
@@ -11,14 +11,14 @@ CREATE TABLE users IF NOT EXISTS (
 );
 
 CREATE INDEX IF NOT EXISTS users_user_id
-	ON users(user_id);
+    ON users(user_id);
 CREATE INDEX IF NOT EXISTS users_name
-	ON users(lower(name));
+    ON users(lower(name));
 CREATE INDEX IF NOT EXISTS users_nip
-	ON users(nip);
+    ON users(nip);
 CREATE INDEX IF NOT EXISTS users_role
-	ON users(role);
+    ON users(role);
 CREATE INDEX IF NOT EXISTS users_created_at_desc
-	ON users(created_at desc);
+    ON users(created_at desc);
 CREATE INDEX IF NOT EXISTS users_created_at_asc
-	ON users(created_at asc);
+    ON users(created_at asc);

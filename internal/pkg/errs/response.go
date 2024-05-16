@@ -14,10 +14,9 @@ type Response struct {
 	Data    interface{} `json:"data,omitempty"`
 }
 
-func NewGenericError(code int, msg string, err error) Response {
+func NewGenericError(code int, msg string) Response {
 	return Response{
 		respCode: code,
-		Error:    err.Error(),
 		Message:  msg,
 	}
 }

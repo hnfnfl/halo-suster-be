@@ -1,7 +1,6 @@
 package service
 
 import (
-	"fmt"
 	"halo-suster/internal/db/model"
 	"halo-suster/internal/pkg/dto"
 	"halo-suster/internal/pkg/errs"
@@ -11,6 +10,8 @@ import (
 )
 
 func (s *Service) RegisterUser(in model.User) errs.Response {
+	var err error
+
 	tx, err := s.DB().Begin()
 	if err != nil {
 		return errs.NewInternalError("transaction error", err)
@@ -28,7 +29,7 @@ func (s *Service) RegisterUser(in model.User) errs.Response {
 	}
 
 	if count > 0 {
-		return errs.NewGenericError(http.StatusUnauthorized, "NIP already registered", fmt.Errorf("NIP already registered"))
+		return errs.NewGenericError(http.StatusUnauthorized, "NIP already registered")
 	}
 
 	// insert user by role
@@ -45,9 +46,12 @@ func (s *Service) RegisterUser(in model.User) errs.Response {
 	}
 
 	// generate token
-	token, err := middleware.JWTSign(s.Config(), 1*time.Hour, in.UserID)
-	if err != nil {
-		return errs.NewInternalError("token signing error", err)
+	var token string
+	if in.Role == "it" {
+		token, err = middleware.JWTSign(s.Config(), 1*time.Hour, in.UserID)
+		if err != nil {
+			return errs.NewInternalError("token signing error", err)
+		}
 	}
 
 	if err = tx.Commit(); err != nil {

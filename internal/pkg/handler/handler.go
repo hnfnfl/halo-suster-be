@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"halo-suster/internal/db"
 	"halo-suster/internal/pkg/configuration"
+	"halo-suster/internal/pkg/middleware"
 	"halo-suster/internal/pkg/service"
 
 	"github.com/gin-gonic/gin"
@@ -44,7 +45,9 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	authGroup := router.Group("/v1/user/")
 	authGroup.POST("it/register", userHandler.Register)
 
-	router.GET("/ping", func(c *gin.Context) {
+	nurseGroup := router.Group("/v1/user/")
+	nurseGroup.Use(middleware.JWTAuthMiddleware(cfg))
+	nurseGroup.GET("nurse/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{
 			"message": "pong",
 		})

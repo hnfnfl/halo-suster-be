@@ -9,9 +9,9 @@ import (
 type Response struct {
 	respCode int
 
-	Message string      `json:"message"`
-	Error   string      `json:"error"`
-	Data    interface{} `json:"data"`
+	Message string      `json:"message,omitempty"`
+	Error   string      `json:"error,omitempty"`
+	Data    interface{} `json:"data,omitempty"`
 }
 
 func NewGenericError(code int, msg string, err error) Response {
@@ -34,6 +34,13 @@ func NewValidationError(msg string, err error) Response {
 	return Response{
 		respCode: http.StatusBadRequest,
 		Error:    err.Error(),
+		Message:  msg,
+	}
+}
+
+func NewUnauthorizedError(msg string) Response {
+	return Response{
+		respCode: http.StatusUnauthorized,
 		Message:  msg,
 	}
 }

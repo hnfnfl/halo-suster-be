@@ -1,4 +1,4 @@
-CREATE TYPE user_roles AS ENUM('it', 'nurse');
+CREATE TYPE IF NOT EXISTS user_roles AS ENUM('it', 'nurse');
 
 CREATE TABLE IF NOT EXISTS users (
   user_id varchar(255) primary key,

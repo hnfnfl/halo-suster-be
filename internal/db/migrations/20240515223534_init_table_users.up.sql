@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS users (
   user_id varchar(255) primary key,
   nip varchar(13) unique not null,
   name varchar(50) not null,
-  password_hash BYTEA not null,
+  password_hash BYTEA,
   role user_roles,
   card_image varchar(255),
   created_at timestamp DEFAULT current_timestamp

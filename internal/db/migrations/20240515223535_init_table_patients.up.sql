@@ -1,4 +1,4 @@
-CREATE TYPE IF NOT EXISTS patient_gender AS ENUM('female', 'male');
+CREATE TYPE patient_gender AS ENUM('female', 'male');
 
 CREATE TABLE IF NOT EXISTS patients (
   identity_number varchar(16) primary key,

@@ -1,9 +1,10 @@
-package router
+package handler
 
 import (
 	"fmt"
 	"halo-suster/internal/db"
 	"halo-suster/internal/pkg/configuration"
+	"halo-suster/internal/pkg/service"
 
 	"github.com/gin-gonic/gin"
 	"github.com/sirupsen/logrus"
@@ -24,6 +25,9 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 		c.Set("db", db)
 	})
 
+	service := service.NewService(cfg, db)
+	userHandler := NewUserHandler(service)
+
 	// t, err := middleware.JWTSign(cfg, 10*time.Minute, "1234567890")
 	// if err != nil {
 	// 	log.Fatalf("Error: %v", err)
@@ -37,8 +41,8 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	// log.Infof("Test: %v", test)
 
 	// login
-	// loginGroup := router.Group("/v1/user/")
-	// loginGroup.POST("/it/login", Login)
+	authGroup := router.Group("/v1/user/")
+	authGroup.POST("it/register", userHandler.Register)
 
 	router.GET("/ping", func(c *gin.Context) {
 		c.JSON(200, gin.H{

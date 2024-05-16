@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 func JWTSign(cfg *configuration.Configuration, expiry time.Duration, userId string) (string, error) {
@@ -50,4 +51,8 @@ func JWTVerify(cfg *configuration.Configuration, tokenString string) (string, er
 	}
 
 	return claims.Subject, nil
+}
+
+func PasswordHash(password string, salt string) ([]byte, error) {
+	return bcrypt.GenerateFromPassword([]byte(password+salt), bcrypt.DefaultCost)
 }

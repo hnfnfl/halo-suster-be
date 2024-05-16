@@ -2,7 +2,7 @@ Environment: development
 LogLevel: debug
 
 DB:
-  Name: mydb
+  Name: halo-suster
   Port: 5432
   Host: localhost
   Username: myuser

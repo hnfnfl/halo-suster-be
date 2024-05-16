@@ -2,8 +2,8 @@ package main
 
 import (
 	"halo-suster/internal/pkg/configuration"
+	"halo-suster/internal/pkg/handler"
 	"halo-suster/internal/pkg/logger"
-	"halo-suster/internal/pkg/router"
 )
 
 func main() {
@@ -17,7 +17,7 @@ func main() {
 		panic(err)
 	}
 
-	if err := router.Run(config, log); err != nil {
+	if err := handler.Run(config, log); err != nil {
 		log.Fatalf("Server error: %v", err)
 	}
 }

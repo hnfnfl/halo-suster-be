@@ -3,11 +3,11 @@ package model
 import "time"
 
 type User struct {
-	UserID       string    `json:"user_id"`
-	NIP          string    `json:"nip"`
-	Name         string    `json:"name"`
-	PasswordHash []byte    `json:"password_hash"`
-	Role         string    `json:"role"`
-	CardImage    string    `json:"card_image"`
-	CreatedAt    time.Time `json:"created_at"`
+	UserID       string    `db:"user_id"`
+	NIP          string    `db:"nip"`
+	Name         string    `db:"name"`
+	PasswordHash []byte    `db:"password_hash"`
+	Role         string    `db:"role"`
+	CardImage    string    `db:"card_image"`
+	CreatedAt    time.Time `db:"created_at"`
 }

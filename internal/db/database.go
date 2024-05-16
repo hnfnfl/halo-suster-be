@@ -17,10 +17,10 @@ func New(cfg *configuration.Configuration) (*sql.DB, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer db.Close()
 
 	// check connection
 	if err := db.Ping(); err != nil {
+		defer db.Close()
 		return nil, err
 	}
 

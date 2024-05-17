@@ -13,6 +13,7 @@ const (
 
 	Environment = "ENVIRONMENT"
 	LogLevel    = "LOGLEVEL"
+	AuthExpiry  = "AUTHEXPIRY"
 
 	DBName     = "DB.NAME"
 	DBPort     = "DB.PORT"
@@ -35,6 +36,7 @@ const (
 var requiredConfig = []string{
 	Environment,
 	LogLevel,
+	AuthExpiry,
 	DBName,
 	DBPort,
 	DBHost,
@@ -102,16 +104,22 @@ func NewConfiguration() (*Configuration, error) {
 
 	maxIdle := viper.GetInt(DBMaxIdle)
 	maxOpen := viper.GetInt(DBMaxOpen)
+	authExpiry := viper.GetInt(AuthExpiry)
+
 	if maxIdle == 0 {
 		maxIdle = 10
 	}
 	if maxOpen == 0 {
 		maxOpen = 20
 	}
+	if authExpiry == 0 {
+		maxIdle = 8
+	}
 
 	config := &Configuration{
 		Environment: viper.GetString(Environment),
 		LogLevel:    viper.GetString(LogLevel),
+		AuthExpiry:  authExpiry,
 
 		DBName:     viper.GetString(DBName),
 		DBPort:     viper.GetString(DBPort),

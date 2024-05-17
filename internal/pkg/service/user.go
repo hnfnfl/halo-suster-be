@@ -6,6 +6,7 @@ import (
 	"halo-suster/internal/pkg/errs"
 	"halo-suster/internal/pkg/middleware"
 	"net/http"
+	"strconv"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -49,7 +50,7 @@ func (s *Service) RegisterUser(body model.User) errs.Response {
 	// generate token
 	var token string
 	if body.Role == "it" {
-		token, err = middleware.JWTSign(s.Config(), body.UserID)
+		token, err = middleware.JWTSign(s.Config(), body.UserID, body.NIP, body.Role)
 		if err != nil {
 			return errs.NewInternalError("token signing error", err)
 		}
@@ -88,7 +89,7 @@ func (s *Service) LoginUser(data model.User, body dto.LoginRequest) errs.Respons
 
 	query_err := tx.QueryRow(q, data.NIP).Scan(&data.UserID, data.Name, data.PasswordHash)
 	if query_err != nil {
-		return errs.NewNotFoundError("user is not found")
+		return errs.NewNotFoundError("user is not found", query_err)
 	}
 
 	//compare password
@@ -98,7 +99,7 @@ func (s *Service) LoginUser(data model.User, body dto.LoginRequest) errs.Respons
 
 	// generate token
 	var token string
-	token, err = middleware.JWTSign(s.Config(), data.UserID)
+	token, err = middleware.JWTSign(s.Config(), data.UserID, strconv.Itoa(body.NIP), data.Role)
 	if err != nil {
 		return errs.NewInternalError("token signing error", err)
 	}
@@ -116,4 +117,30 @@ func (s *Service) LoginUser(data model.User, body dto.LoginRequest) errs.Respons
 			AccessToken: token,
 		},
 	}
+}
+
+func (s *Service) FindUserById(userId string) (model.User, errs.Response) {
+	var err error
+
+	tx, err := s.DB().Begin()
+	if err != nil {
+		return model.User{}, errs.NewInternalError("transaction error", err)
+	}
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			return
+		}
+	}()
+
+	data := model.User{}
+
+	// check NIP in database
+	q := "SELECT user_id, nip, name, role FROM users WHERE user_id = $1"
+
+	queryErr := tx.QueryRow(q, userId).Scan(&data.UserID, data.NIP, data.Role)
+
+	if queryErr != nil {
+		return model.User{}, errs.NewInternalError("user is not found", err)
+	}
+	return data, errs.Response{}
 }

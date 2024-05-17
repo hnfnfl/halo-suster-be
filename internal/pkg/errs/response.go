@@ -7,58 +7,59 @@ import (
 )
 
 type Response struct {
-	respCode int
+	Code int
 
 	Message string      `json:"message,omitempty"`
-	Error   string      `json:"error,omitempty"`
+	Error   error       `json:"error,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
 }
 
 func NewGenericError(code int, msg string) Response {
 	return Response{
-		respCode: code,
-		Message:  msg,
+		Code:    code,
+		Message: msg,
 	}
 }
 
 func NewInternalError(msg string, err error) Response {
 	return Response{
-		respCode: http.StatusInternalServerError,
-		Error:    err.Error(),
-		Message:  msg,
+		Code:    http.StatusInternalServerError,
+		Error:   err,
+		Message: msg,
 	}
 }
 
-func NewNotFoundError(msg string) Response {
+func NewNotFoundError(msg string, err error) Response {
 	return Response{
-		respCode: http.StatusNotFound,
-		Message:  msg,
+		Code:    http.StatusNotFound,
+		Error:   err,
+		Message: msg,
 	}
 }
 
 func NewValidationError(msg string, err error) Response {
 	return Response{
-		respCode: http.StatusBadRequest,
-		Error:    err.Error(),
-		Message:  msg,
+		Code:    http.StatusBadRequest,
+		Error:   err,
+		Message: msg,
 	}
 }
 
 func NewBadRequestError(msg string, err error) Response {
 	return Response{
-		respCode: http.StatusBadRequest,
-		Error:    err.Error(),
-		Message:  msg,
+		Code:    http.StatusBadRequest,
+		Error:   err,
+		Message: msg,
 	}
 }
 
 func NewUnauthorizedError(msg string) Response {
 	return Response{
-		respCode: http.StatusUnauthorized,
-		Message:  msg,
+		Code:    http.StatusUnauthorized,
+		Message: msg,
 	}
 }
 
 func (e Response) Send(ctx *gin.Context) {
-	ctx.JSON(e.respCode, e)
+	ctx.JSON(e.Code, e)
 }

@@ -8,6 +8,7 @@ import (
 	"halo-suster/internal/pkg/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 )
 
@@ -27,24 +28,14 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	})
 
 	service := service.NewService(cfg, db)
-	userHandler := NewUserHandler(service)
+	userHandler := NewUserHandler(service, &validator.Validate{})
 	patientHandler := NewPatientHandler(service)
-
-	// t, err := middleware.JWTSign(cfg, 10*time.Minute, "1234567890")
-	// if err != nil {
-	// 	log.Fatalf("Error: %v", err)
-	// }
-	// log.Infof("Token: %v", t)
-
-	// test, err := middleware.JWTVerify(cfg, t)
-	// if err != nil {
-	// 	log.Fatalf("Error: %v", err)
-	// }
-	// log.Infof("Test: %v", test)
 
 	// login
 	authGroup := router.Group("/v1/user/")
 	authGroup.POST("it/register", userHandler.Register)
+	authGroup.POST("it/login", userHandler.ITLogin)
+	authGroup.POST("nurse/login", userHandler.NurseLogin)
 
 	nurseGroup := router.Group("/v1/user/")
 	nurseGroup.Use(middleware.JWTAuthMiddleware(cfg))

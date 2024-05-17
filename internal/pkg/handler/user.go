@@ -9,28 +9,32 @@ import (
 	"halo-suster/internal/pkg/util"
 	"strconv"
 
+	// "net/http"
+
 	"github.com/gin-gonic/gin"
+	"github.com/go-playground/validator/v10"
 )
 
 type UserHandler struct {
-	*service.Service
+	service   *service.Service
+	validator *validator.Validate
 }
 
-func NewUserHandler(s *service.Service) *UserHandler {
-	return &UserHandler{s}
+func NewUserHandler(s *service.Service, validator *validator.Validate) *UserHandler {
+	return &UserHandler{s, validator}
 }
 
 func (h *UserHandler) Register(ctx *gin.Context) {
-	in := dto.RegisterInput{}
+	in := dto.RegisterRequest{}
 	msg, err := util.JsonBinding(ctx, &in)
 	if err != nil {
 		errs.NewValidationError(msg, err).Send(ctx)
 		return
 	}
 
-	// validate input
+	// validate Request
 	if err := in.Validate(); err != nil {
-		errs.NewValidationError("input validation error", err).Send(ctx)
+		errs.NewValidationError("Request validation error", err).Send(ctx)
 		return
 	}
 
@@ -42,7 +46,7 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 	var passHash []byte
 	if in.Password != "" {
 		var err error
-		passHash, err = middleware.PasswordHash(in.Password, h.Config().Salt)
+		passHash, err = middleware.PasswordHash(in.Password, h.service.Config().Salt)
 		if err != nil {
 			errs.NewInternalError("hashing error", err).Send(ctx)
 			return
@@ -61,5 +65,69 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 		data.CardImage = *in.CardImage
 	}
 
-	h.RegisterUser(data).Send(ctx)
+	h.service.RegisterUser(data).Send(ctx)
+}
+
+func (h *UserHandler) ITLogin(ctx *gin.Context) {
+	body := dto.LoginRequest{}
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		errs.NewInternalError("JSON binding error", err).Send(ctx)
+		return
+	}
+
+	err := h.validator.Struct(body)
+	if err != nil {
+		errs.NewValidationError("Request validation error", err).Send(ctx)
+		return
+	}
+
+	data := model.User{}
+
+	if strconv.Itoa(body.NIP)[:3] == "615" {
+		data.NIP = strconv.Itoa(body.NIP)
+		data.Role = "it"
+	} else {
+		errs.NewNotFoundError("user is not from IT (nip not starts with 615)")
+		return
+	}
+
+	h.service.LoginUser(data, body).Send(ctx)
+
+}
+
+func (h *UserHandler) NurseLogin(ctx *gin.Context) {
+	body := dto.LoginRequest{}
+	if err := ctx.ShouldBindJSON(&body); err != nil {
+		errs.NewInternalError("JSON binding error", err).Send(ctx)
+		return
+	}
+
+	err := h.validator.Struct(body)
+	if err != nil {
+		errs.NewValidationError("Request validation error", err).Send(ctx)
+		return
+	}
+
+	data := model.User{}
+	var passHash []byte
+	if body.Password != "" {
+		var err error
+		passHash, err = middleware.PasswordHash(body.Password, h.service.Config().Salt)
+		if err != nil {
+			errs.NewInternalError("hashing error", err).Send(ctx)
+			return
+		}
+	}
+
+	if strconv.Itoa(body.NIP)[:3] == "615" {
+		data.NIP = strconv.Itoa(body.NIP)
+		data.Role = "it"
+		data.PasswordHash = passHash
+	} else {
+		errs.NewNotFoundError("user is not from IT (nip not starts with 615)")
+		return
+	}
+
+	h.service.LoginUser(data, body).Send(ctx)
+
 }

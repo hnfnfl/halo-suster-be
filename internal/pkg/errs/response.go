@@ -29,7 +29,22 @@ func NewInternalError(msg string, err error) Response {
 	}
 }
 
+func NewNotFoundError(msg string) Response {
+	return Response{
+		respCode: http.StatusNotFound,
+		Message:  msg,
+	}
+}
+
 func NewValidationError(msg string, err error) Response {
+	return Response{
+		respCode: http.StatusBadRequest,
+		Error:    err.Error(),
+		Message:  msg,
+	}
+}
+
+func NewBadRequestError(msg string, err error) Response {
 	return Response{
 		respCode: http.StatusBadRequest,
 		Error:    err.Error(),

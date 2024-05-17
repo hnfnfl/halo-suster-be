@@ -59,6 +59,7 @@ type S3Config struct {
 type Configuration struct {
 	Environment string
 	LogLevel    string
+	AuthExpiry  int
 
 	DBName     string
 	DBPort     string

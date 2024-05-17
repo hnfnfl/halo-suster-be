@@ -10,7 +10,8 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func JWTSign(cfg *configuration.Configuration, expiry time.Duration, userId string) (string, error) {
+func JWTSign(cfg *configuration.Configuration, userId string) (string, error) {
+	expiry := time.Duration(cfg.AuthExpiry) * time.Hour
 	timeStamp := time.Now()
 	expiryTime := timeStamp.Add(expiry)
 

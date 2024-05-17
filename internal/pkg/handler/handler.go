@@ -30,6 +30,7 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	service := service.NewService(cfg, db)
 	userHandler := NewUserHandler(service, &validator.Validate{})
 	patientHandler := NewPatientHandler(service)
+	nurseHandler := NewNurseHandler(service, &validator.Validate{})
 
 	// login
 	authGroup := router.Group("/v1/user/")
@@ -40,6 +41,7 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	nurseGroup := router.Group("/v1/user/")
 	nurseGroup.Use(middleware.JWTAuthMiddleware(cfg))
 	nurseGroup.POST("nurse/register", userHandler.Register)
+	nurseGroup.POST("nurse/{userId}/access", nurseHandler.AccessNurse)
 	// nurseGroup.GET("nurse/ping", func(c *gin.Context) {
 	// 	c.JSON(200, gin.H{
 	// 		"message": "pong",

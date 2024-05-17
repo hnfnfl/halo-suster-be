@@ -49,7 +49,7 @@ func (s *Service) RegisterUser(body model.User) errs.Response {
 	// generate token
 	var token string
 	if body.Role == "it" {
-		token, err = middleware.JWTSign(s.Config(), body.UserID)
+		token, err = middleware.JWTSign(s.Config(), body.UserID, body.NIP, body.Role)
 		if err != nil {
 			return errs.NewInternalError("token signing error", err)
 		}
@@ -87,14 +87,15 @@ func (s *Service) LoginUser(body model.User) errs.Response {
 	}()
 
 	// check NIP in database
-	stmt := "SELECT user_id, nip, name, password_hash FROM users WHERE nip = $1"
+	stmt := "SELECT user_id, nip, name, password_hash, role FROM users WHERE nip = $1"
 	if err := tx.QueryRow(stmt, body.NIP).Scan(
 		&out.UserID,
 		&out.NIP,
 		&out.Name,
 		&out.PasswordHash,
+		&out.Role,
 	); err != nil {
-		return errs.NewNotFoundError("user is not found")
+		return errs.NewNotFoundError("user is not found", errs.ErrUserNotFound)
 	}
 
 	if out.PasswordHash == nil {
@@ -108,7 +109,7 @@ func (s *Service) LoginUser(body model.User) errs.Response {
 
 	// generate token
 	var token string
-	token, err = middleware.JWTSign(s.Config(), body.UserID)
+	token, err = middleware.JWTSign(s.Config(), out.UserID, out.NIP, out.Role)
 	if err != nil {
 		return errs.NewInternalError("token signing error", err)
 	}
@@ -126,4 +127,30 @@ func (s *Service) LoginUser(body model.User) errs.Response {
 			AccessToken: token,
 		},
 	}
+}
+
+func (s *Service) FindUserById(userId string) (model.User, errs.Response) {
+	var err error
+
+	tx, err := s.DB().Begin()
+	if err != nil {
+		return model.User{}, errs.NewInternalError("transaction error", err)
+	}
+	defer func() {
+		if err := tx.Rollback(); err != nil {
+			return
+		}
+	}()
+
+	data := model.User{}
+
+	// check NIP in database
+	q := "SELECT user_id, nip, name, role FROM users WHERE user_id = $1"
+
+	queryErr := tx.QueryRow(q, userId).Scan(&data.UserID, data.NIP, data.Role)
+
+	if queryErr != nil {
+		return model.User{}, errs.NewInternalError("user is not found", err)
+	}
+	return data, errs.Response{}
 }

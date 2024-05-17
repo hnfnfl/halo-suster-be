@@ -10,7 +10,7 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
-func JWTSign(cfg *configuration.Configuration, userId string) (string, error) {
+func JWTSign(cfg *configuration.Configuration, userId string, nip string, role string) (string, error) {
 	expiry := time.Duration(cfg.AuthExpiry) * time.Hour
 	timeStamp := time.Now()
 	expiryTime := timeStamp.Add(expiry)
@@ -20,7 +20,9 @@ func JWTSign(cfg *configuration.Configuration, userId string) (string, error) {
 		jwt.RegisteredClaims{
 			IssuedAt:  jwt.NewNumericDate(timeStamp),
 			ExpiresAt: jwt.NewNumericDate(expiryTime),
-			Subject:   userId,
+			ID:        userId,
+			Issuer:    nip,
+			Subject:   role,
 		},
 	)
 
@@ -75,7 +77,9 @@ func JWTAuthMiddleware(cfg *configuration.Configuration) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userID", claims.Subject)
+		c.Set("userID", claims.ID)
+		c.Set("userNIP", claims.Issuer)
+		c.Set("userRole", claims.Subject)
 
 		c.Next()
 	}

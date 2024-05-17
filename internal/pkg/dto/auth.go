@@ -37,22 +37,6 @@ func (r RegisterRequest) Validate() error {
 		return validation.NewError("nip", "NIP is not valid")
 	}
 
-	if err := validation.ValidateStruct(&r,
-		validation.Field(&r.NIP, validation.Required),
-		validation.Field(&r.Name, validation.Required, validation.Length(5, 50)),
-	); err != nil {
-		return err
-	}
-
-	// - first until third digit, should start with `615`
-	if nipStr[:3] == "615" {
-		// validate as IT
-		return validation.ValidateStruct(&r, validation.Field(&r.Password, validation.Required, validation.Length(5, 33)))
-	} else if nipStr[:3] == "303" {
-		// validate as Nurse
-		return validation.ValidateStruct(&r, validation.Field(&r.CardImage, validation.Required))
-	}
-
 	// 	- the fourth digit, if it's male, fill it with `1`, else `2`
 	genderUser, err := strconv.Atoi(nipStr[3:4])
 	if err != nil {
@@ -80,6 +64,22 @@ func (r RegisterRequest) Validate() error {
 
 	if monthUser < 1 || monthUser > 12 {
 		return validation.NewError("nip", "NIP is not valid, the ninth and tenth, fill it with month, starts from `01` till `12`")
+	}
+
+	if err := validation.ValidateStruct(&r,
+		validation.Field(&r.NIP, validation.Required),
+		validation.Field(&r.Name, validation.Required, validation.Length(5, 50)),
+	); err != nil {
+		return err
+	}
+
+	// - first until third digit, should start with `615`
+	if nipStr[:3] == "615" {
+		// validate as IT
+		return validation.ValidateStruct(&r, validation.Field(&r.Password, validation.Required, validation.Length(5, 33)))
+	} else if nipStr[:3] == "303" {
+		// validate as Nurse
+		return validation.ValidateStruct(&r, validation.Field(&r.CardImage, validation.Required))
 	}
 
 	return validation.NewError("nip", "NIP is not valid")

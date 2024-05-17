@@ -70,8 +70,11 @@ func (s *Service) RegisterUser(body model.User) errs.Response {
 	}
 }
 
-func (s *Service) LoginUser(data model.User, body dto.LoginRequest) errs.Response {
-	var err error
+func (s *Service) LoginUser(body model.User) errs.Response {
+	var (
+		err error
+		out model.User
+	)
 
 	tx, err := s.DB().Begin()
 	if err != nil {
@@ -84,21 +87,28 @@ func (s *Service) LoginUser(data model.User, body dto.LoginRequest) errs.Respons
 	}()
 
 	// check NIP in database
-	q := "SELECT user_id, name, password_hash FROM users WHERE nip = $1"
-
-	query_err := tx.QueryRow(q, data.NIP).Scan(&data.UserID, data.Name, data.PasswordHash)
-	if query_err != nil {
+	stmt := "SELECT user_id, nip, name, password_hash FROM users WHERE nip = $1"
+	if err := tx.QueryRow(stmt, body.NIP).Scan(
+		&out.UserID,
+		&out.NIP,
+		&out.Name,
+		&out.PasswordHash,
+	); err != nil {
 		return errs.NewNotFoundError("user is not found")
 	}
 
+	if out.PasswordHash == nil {
+		return errs.NewBadRequestError("user is not having access", errs.ErrUnauthorized)
+	}
+
 	//compare password
-	if err := bcrypt.CompareHashAndPassword([]byte(body.Password), []byte(data.PasswordHash)); err != nil {
+	if err := bcrypt.CompareHashAndPassword(out.PasswordHash, body.PasswordHash); err != nil {
 		return errs.NewBadRequestError("password is wrong", err)
 	}
 
 	// generate token
 	var token string
-	token, err = middleware.JWTSign(s.Config(), data.UserID)
+	token, err = middleware.JWTSign(s.Config(), body.UserID)
 	if err != nil {
 		return errs.NewInternalError("token signing error", err)
 	}
@@ -110,9 +120,9 @@ func (s *Service) LoginUser(data model.User, body dto.LoginRequest) errs.Respons
 	return errs.Response{
 		Message: "User login successfully",
 		Data: dto.AuthResponse{
-			UserId:      data.UserID,
-			NIP:         data.NIP,
-			Name:        data.Name,
+			UserId:      out.UserID,
+			NIP:         out.NIP,
+			Name:        out.Name,
 			AccessToken: token,
 		},
 	}

@@ -34,8 +34,8 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	// login
 	authGroup := router.Group("/v1/user/")
 	authGroup.POST("it/register", userHandler.Register)
-	authGroup.POST("it/login", userHandler.ITLogin)
-	authGroup.POST("nurse/login", userHandler.NurseLogin)
+	authGroup.POST("it/login", userHandler.Login)
+	authGroup.POST("nurse/login", userHandler.Login)
 
 	nurseGroup := router.Group("/v1/user/")
 	nurseGroup.Use(middleware.JWTAuthMiddleware(cfg))

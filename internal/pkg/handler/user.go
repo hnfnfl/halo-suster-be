@@ -26,8 +26,9 @@ func NewUserHandler(s *service.Service, validator *validator.Validate) *UserHand
 
 func (h *UserHandler) Register(ctx *gin.Context) {
 	in := dto.RegisterRequest{}
-	if err := ctx.ShouldBindJSON(&in); err != nil {
-		errs.NewInternalError("JSON binding error", err).Send(ctx)
+	msg, err := util.JsonBinding(ctx, &in)
+	if err != nil {
+		errs.NewValidationError(msg, err).Send(ctx)
 		return
 	}
 

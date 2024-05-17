@@ -1,14 +1,14 @@
 CREATE TABLE IF NOT EXISTS medical_records(
   unique_id varchar(255) primary key,
   identity_number varchar(16) not null,
-  creator_id varchar(255),
+  creator_id varchar(19),
   symptoms text not null,
   medication text not null,
   created_at timestamp
 );
 
 ALTER TABLE medical_records
-    ADD CONSTRAINT fk_creator_id FOREIGN KEY (creator_id) REFERENCES users(user_id) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_creator_id FOREIGN KEY (creator_id) REFERENCES users(nip) ON DELETE CASCADE;
 ALTER TABLE medical_records
     ADD CONSTRAINT fk_patient_id FOREIGN KEY (identity_number) REFERENCES patients(identity_number) ON DELETE CASCADE;
 

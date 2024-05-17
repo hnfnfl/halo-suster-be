@@ -2,7 +2,7 @@ CREATE TYPE user_roles AS ENUM('it', 'nurse');
 
 CREATE TABLE IF NOT EXISTS users (
   user_id varchar(255) primary key,
-  nip varchar(13) unique not null,
+  nip varchar(19) unique not null,
   name varchar(50) not null,
   password_hash BYTEA,
   role user_roles,

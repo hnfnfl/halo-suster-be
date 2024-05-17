@@ -8,7 +8,7 @@ CREATE TABLE IF NOT EXISTS medical_records(
 );
 
 ALTER TABLE medical_records
-    ADD CONSTRAINT fk_creator_id FOREIGN KEY (creator_id) REFERENCES users(nip) ON DELETE CASCADE;
+    ADD CONSTRAINT fk_creator_id FOREIGN KEY (creator_id) REFERENCES users(nip) ON DELETE SET NULL;
 ALTER TABLE medical_records
     ADD CONSTRAINT fk_patient_id FOREIGN KEY (identity_number) REFERENCES patients(identity_number) ON DELETE CASCADE;
 

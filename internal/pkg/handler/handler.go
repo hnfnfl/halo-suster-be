@@ -28,6 +28,7 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 
 	service := service.NewService(cfg, db)
 	userHandler := NewUserHandler(service)
+	patientHandler := NewPatientHandler(service)
 
 	// t, err := middleware.JWTSign(cfg, 10*time.Minute, "1234567890")
 	// if err != nil {
@@ -48,11 +49,16 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	nurseGroup := router.Group("/v1/user/")
 	nurseGroup.Use(middleware.JWTAuthMiddleware(cfg))
 	nurseGroup.POST("nurse/register", userHandler.Register)
-	nurseGroup.GET("nurse/ping", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"message": "pong",
-		})
-	})
+	// nurseGroup.GET("nurse/ping", func(c *gin.Context) {
+	// 	c.JSON(200, gin.H{
+	// 		"message": "pong",
+	// 	})
+	// })
+
+	medicalRecord := router.Group("/v1/medical/")
+	medicalRecord.Use(middleware.JWTAuthMiddleware(cfg))
+	medicalRecord.POST("patient", patientHandler.CreatePatient)
+	// medicalRecord.GET("patient", medicalRecord.)
 
 	return router.Run(":8080")
 }

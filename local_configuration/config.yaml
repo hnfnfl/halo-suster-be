@@ -5,8 +5,8 @@ DB:
   Name: halo-suster
   Port: 5432
   Host: localhost
-  Username: myuser
-  Password: mypassword
+  Username: postgres
+  Password: admin
   Params: sslmode=disable
   MaxIdleConns: 20
   MaxOpenConns: 20

@@ -2,7 +2,7 @@ package model
 
 import "time"
 
-type Medical struct {
+type MedicalRecord struct {
 	UniqueID       string    `db:"unique_id"`
 	IdentityNumber string    `db:"identity_number"`
 	CreatorID      string    `db:"creator_id"`

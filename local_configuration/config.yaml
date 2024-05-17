@@ -1,5 +1,6 @@
 Environment: development
 LogLevel: debug
+AUTHEXPIRY: 1 # in hours
 
 DB:
   Name: halo-suster

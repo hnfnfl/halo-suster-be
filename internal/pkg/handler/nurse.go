@@ -9,7 +9,6 @@ import (
 	"halo-suster/internal/pkg/util"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-chi/jwtauth/v5"
 	"github.com/go-playground/validator/v10"
 )
 
@@ -36,12 +35,6 @@ func (nh *NurseHandler) AccessNurse(ctx *gin.Context) {
 		return
 	}
 
-	token, _, err := jwtauth.FromContext(ctx.Request.Context())
-	if err != nil {
-		errs.NewUnauthorizedError("failed to get token from request").Send(ctx)
-		return
-	}
-
 	data := model.User{}
 	var passHash []byte
 	var errHash error
@@ -53,8 +46,9 @@ func (nh *NurseHandler) AccessNurse(ctx *gin.Context) {
 	}
 	data.PasswordHash = passHash
 	data.UserID = ctx.Param("userId")
+	data.Role = ctx.Value("userRole").(string)
 
-	if token.Subject() == "it" {
+	if data.Role == "it" {
 		nh.service.AccessNurse(data).Send(ctx)
 	} else {
 		errs.NewUnauthorizedError("user is not authorized").Send(ctx)

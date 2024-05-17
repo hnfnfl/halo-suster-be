@@ -77,7 +77,9 @@ func JWTAuthMiddleware(cfg *configuration.Configuration) gin.HandlerFunc {
 			return
 		}
 
-		c.Set("userID", claims.Subject)
+		c.Set("userID", claims.ID)
+		c.Set("userNIP", claims.Issuer)
+		c.Set("userRole", claims.Subject)
 
 		c.Next()
 	}

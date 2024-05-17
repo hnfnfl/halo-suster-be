@@ -23,7 +23,7 @@ func (s *Service) AccessNurse(Nurse model.User) errs.Response {
 	}()
 
 	data, errNotFound := s.FindUserById(Nurse.UserID)
-	if errNotFound.Error != nil {
+	if errNotFound.Error != "" {
 		return errNotFound
 	}
 

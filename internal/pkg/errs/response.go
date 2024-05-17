@@ -10,7 +10,7 @@ type Response struct {
 	Code int
 
 	Message string      `json:"message,omitempty"`
-	Error   string      `json:"error,omitempty"`
+	Error   error       `json:"error,omitempty"`
 	Data    interface{} `json:"data,omitempty"`
 }
 
@@ -24,14 +24,15 @@ func NewGenericError(code int, msg string) Response {
 func NewInternalError(msg string, err error) Response {
 	return Response{
 		Code:    http.StatusInternalServerError,
-		Error:   err.Error(),
+		Error:   err,
 		Message: msg,
 	}
 }
 
-func NewNotFoundError(msg string) Response {
+func NewNotFoundError(msg string, err error) Response {
 	return Response{
 		Code:    http.StatusNotFound,
+		Error:   err,
 		Message: msg,
 	}
 }
@@ -39,7 +40,7 @@ func NewNotFoundError(msg string) Response {
 func NewValidationError(msg string, err error) Response {
 	return Response{
 		Code:    http.StatusBadRequest,
-		Error:   err.Error(),
+		Error:   err,
 		Message: msg,
 	}
 }
@@ -47,7 +48,7 @@ func NewValidationError(msg string, err error) Response {
 func NewBadRequestError(msg string, err error) Response {
 	return Response{
 		Code:    http.StatusBadRequest,
-		Error:   err.Error(),
+		Error:   err,
 		Message: msg,
 	}
 }

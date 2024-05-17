@@ -87,7 +87,7 @@ func (h *UserHandler) ITLogin(ctx *gin.Context) {
 		data.NIP = strconv.Itoa(body.NIP)
 		data.Role = "it"
 	} else {
-		errs.NewNotFoundError("user is not from IT (nip not starts with 615)")
+		errs.NewNotFoundError("user is not from IT (nip not starts with 615)", errs.ErrUserNotFound)
 		return
 	}
 
@@ -119,12 +119,12 @@ func (h *UserHandler) NurseLogin(ctx *gin.Context) {
 		}
 	}
 
-	if strconv.Itoa(body.NIP)[:3] == "615" {
+	if strconv.Itoa(body.NIP)[:3] == "303" {
 		data.NIP = strconv.Itoa(body.NIP)
-		data.Role = "it"
+		data.Role = "nurse"
 		data.PasswordHash = passHash
 	} else {
-		errs.NewNotFoundError("user is not from IT (nip not starts with 615)")
+		errs.NewNotFoundError("user is not from IT (nip not starts with 303)", errs.ErrUserNotFound)
 		return
 	}
 

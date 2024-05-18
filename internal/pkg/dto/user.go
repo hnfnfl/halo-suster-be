@@ -26,7 +26,7 @@ type (
 	}
 	ResUserGet struct {
 		UserID    string `json:"userId"`
-		NIP       string `json:"nip"`
+		NIP       int    `json:"nip"`
 		Name      string `json:"name"`
 		CreatedAt string `json:"createdAt"`
 	}

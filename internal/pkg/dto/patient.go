@@ -58,3 +58,28 @@ func (r RequestCreatePatient) Validate() error {
 		// validation.Field(&r.IdentityCardScanImg, validation.Required, imgUrlValidationRule),
 	)
 }
+
+type Sort string
+
+const (
+	ASC  Sort = "ASC"
+	DESC Sort = "DESC"
+)
+
+type ReqParamGetPatient struct {
+	IdentityNumber string `json:"identityNumber"`
+	Limit          int    `json:"limit"`
+	Offset         int    `json:"offset"`
+	Name           string `json:"name"`
+	PhoneNumber    string `json:"phoneNumber"`
+	CreatedAt      Sort   `json:"createdAt"`
+}
+
+type ResponseGetPatient struct {
+	IdentityNumber int    `json:"identityNumber"`
+	PhoneNumber    string `json:"phoneNumber"`
+	Name           string `json:"name"`
+	BirthDate      string `json:"birthDate"`
+	Gender         string `json:"gender"`
+	CreatedAt      string `json:"createdAt"`
+}

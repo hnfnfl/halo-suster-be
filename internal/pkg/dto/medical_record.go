@@ -31,3 +31,35 @@ func (r RequestCreateMedicalRecord) Validate() error {
 type ResponseCreateMedicalRecord struct {
 	IdentityNumber string `json:"identityNumber"`
 }
+
+type ReqParamGetMedicalRecord struct {
+	IdentityNumber string
+	UserId         string
+	Nip            string
+	Limit          int `json:"limit"`
+	Offset         int `json:"offset"`
+	CreatedAt      Sort
+}
+
+type ResponseGetMedicalRecord struct {
+	Detail      IdentityDetail `json:"identityDetail"`
+	Symptoms    string         `json:"symptoms"`
+	Medications string         `json:"medications"`
+	CreatedAt   string         `json:"createdAt"`
+	CreatedBy   CreatedBy      `json:"createdBy"`
+}
+
+type IdentityDetail struct {
+	IdentityNumber      int    `json:"identityNumber"`
+	PhoneNumber         string `json:"phoneNumber"`
+	Name                string `json:"name"`
+	BirthDate           string `json:"birthDate"`
+	Gender              string `json:"gender"`
+	IdentityCardScanImg string `json:"identityCardScanImg"`
+}
+
+type CreatedBy struct {
+	Nip    int    `json:"nip"`
+	Name   string `json:"name"`
+	UserId string `json:"userId"`
+}

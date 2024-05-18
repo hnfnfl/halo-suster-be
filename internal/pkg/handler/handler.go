@@ -57,6 +57,7 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	medicalRecord.POST("patient", patientHandler.CreatePatient)
 	medicalRecord.GET("patient", patientHandler.GetPatient)
 	medicalRecord.POST("record", medicalRecordHandler.CreateMedicalRecord)
+	medicalRecord.GET("record", medicalRecordHandler.GetMedicalRecord)
 
 	return router.Run(":8080")
 }

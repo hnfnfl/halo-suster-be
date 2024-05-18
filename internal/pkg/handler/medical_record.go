@@ -38,3 +38,39 @@ func (mrh *MedicalRecordHandler) CreateMedicalRecord(ctx *gin.Context) {
 	}
 	mrh.service.CreateMedicalRecord(data).Send(ctx)
 }
+
+func (mrh *MedicalRecordHandler) GetMedicalRecord(ctx *gin.Context) {
+	var param dto.ReqParamGetMedicalRecord
+	// var limit int
+	param.IdentityNumber = ctx.Query("identityDetail.identityNumber")
+	if ctx.Query("limit") != "" {
+		limit, err := strconv.Atoi(ctx.Query("limit"))
+		if err != nil {
+			errs.NewInternalError("error convert param limit", err).Send(ctx)
+			return
+		}
+		param.Limit = limit
+	} else {
+		param.Limit = 5
+	}
+	if ctx.Query("offset") != "" {
+		offset, err := strconv.Atoi(ctx.Query("offset"))
+		if err != nil {
+			errs.NewInternalError("error convert param offset", err).Send(ctx)
+			return
+		}
+		param.Offset = offset
+	} else {
+		param.Offset = 0
+	}
+	// offset, err := strconv.Atoi(ctx.Query("offset"))
+	// if err != nil {
+	// 	errs.NewInternalError("error convert param offset", err).Send(ctx)
+	// 	return
+	// }
+	// param.Offset = offset
+	param.UserId = ctx.Query("createdBy.userId")
+	param.Nip = ctx.Query("createdBy.nip")
+	param.CreatedAt = dto.Sort(ctx.Query("created_at"))
+	mrh.service.GetAllMedicalRecord(param).Send(ctx)
+}

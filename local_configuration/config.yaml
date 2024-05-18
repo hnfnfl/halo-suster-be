@@ -16,8 +16,8 @@ Jwt:
   Secret: mysecret
   BcryptSalt: 10
 
-S3:
-  ID: myid
-  SecretKey: mysecret
-  BucketName: mybucket
-  Region: us-east-1
+AWS:
+  Access.Key.ID: myid
+  Secret.Access.Key: mysecret
+  S3.Bucket.Name: mybucket
+  Region: us-west-2

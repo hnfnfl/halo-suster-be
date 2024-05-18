@@ -32,6 +32,7 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	patientHandler := NewPatientHandler(service)
 	nurseHandler := NewNurseHandler(service, &validator.Validate{})
 	medicalRecordHandler := NewMedicalRecordHandler(service)
+	imageHandler := NewImageHandler(service)
 
 	// login
 	authGroup := router.Group("/v1/user/")
@@ -46,6 +47,10 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	nurseGroup.PUT("nurse/:userId", nurseHandler.UpdateNurse)
 	nurseGroup.DELETE("nurse/:userId", nurseHandler.DeleteNurse)
 	nurseGroup.POST("nurse/:userId/access", nurseHandler.AccessNurse)
+
+	imageUpload := router.Group("/v1/image/")
+	imageUpload.Use(middleware.JWTAuthMiddleware(cfg))
+	imageUpload.POST("/", imageHandler.UploadImage)
 	// nurseGroup.GET("nurse/ping", func(c *gin.Context) {
 	// 	c.JSON(200, gin.H{
 	// 		"message": "pong",

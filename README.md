@@ -1,6 +1,4 @@
-# Project Name
-
-Halo Suster Backend REST API
+# Halo Suster Backend REST API
 
 ## Description
 

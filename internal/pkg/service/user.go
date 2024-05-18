@@ -1,12 +1,18 @@
 package service
 
 import (
+	"database/sql"
+	"fmt"
 	"halo-suster/internal/db/model"
 	"halo-suster/internal/pkg/dto"
 	"halo-suster/internal/pkg/errs"
 	"halo-suster/internal/pkg/middleware"
 	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
+	"github.com/jackc/pgx/v5/pgconn"
 	"golang.org/x/crypto/bcrypt"
 )
 
@@ -22,7 +28,7 @@ func (s *Service) RegisterUser(body model.User) errs.Response {
 	}
 
 	if count > 0 {
-		return errs.NewGenericError(http.StatusUnauthorized, "NIP already registered")
+		return errs.NewGenericError(http.StatusConflict, "NIP already registered")
 	}
 
 	// insert user by role
@@ -47,11 +53,17 @@ func (s *Service) RegisterUser(body model.User) errs.Response {
 		}
 	}
 
+	nip, err := strconv.Atoi(body.NIP)
+	if err != nil {
+		return errs.NewBadRequestError(err.Error(), err)
+	}
+
 	return errs.Response{
+		Code:    http.StatusCreated,
 		Message: "User registered successfully",
 		Data: dto.AuthResponse{
 			UserId:      body.UserID,
-			NIP:         body.NIP,
+			NIP:         nip,
 			Name:        body.Name,
 			AccessToken: token,
 		},
@@ -94,31 +106,141 @@ func (s *Service) LoginUser(body model.User) errs.Response {
 		return errs.NewInternalError("token signing error", err)
 	}
 
+	nip, err := strconv.Atoi(body.NIP)
+	if err != nil {
+		return errs.NewBadRequestError(err.Error(), err)
+	}
+
 	return errs.Response{
+		Code:    http.StatusOK,
 		Message: "User login successfully",
 		Data: dto.AuthResponse{
-			UserId:      out.UserID,
-			NIP:         out.NIP,
-			Name:        out.Name,
+			UserId:      body.UserID,
+			NIP:         nip,
+			Name:        body.Name,
 			AccessToken: token,
 		},
 	}
 }
 
-func (s *Service) FindUserById(userId string) (model.User, errs.Response) {
-	var err error
-
+func (s *Service) FindUserById(userId string, role string) (model.User, errs.Response) {
 	db := s.DB()
 
 	data := model.User{}
 
 	// check NIP in database
-	q := "SELECT user_id, nip, name, role FROM users WHERE user_id = $1"
+	q := "SELECT user_id, nip, name, role FROM users WHERE role = $2 and user_id = $1"
 
-	queryErr := db.QueryRow(q, userId).Scan(&data.UserID, data.NIP, data.Role)
-
+	queryErr := db.QueryRow(q, userId, role).Scan(&data.UserID, &data.NIP, &data.Name, &data.Role)
 	if queryErr != nil {
-		return model.User{}, errs.NewInternalError("user is not found", err)
+		fmt.Println(queryErr)
+		if queryErr == sql.ErrNoRows {
+			return model.User{}, errs.NewNotFoundError("user is not found", queryErr)
+		} else {
+			return model.User{}, errs.NewInternalError("user is not found", queryErr)
+		}
 	}
 	return data, errs.Response{}
+}
+
+func (s *Service) FindExistingNIP(nip int, role string) error {
+	db := s.DB()
+
+	data := model.User{}
+
+	// check NIP in database
+	q := "SELECT user_id, nip, name, role FROM users WHERE role = $1 and nip = $2"
+
+	queryErr := db.QueryRow(q, role, nip).Scan(&data.UserID, &data.NIP, &data.Name, &data.Role)
+	if queryErr != nil {
+		if queryErr == sql.ErrNoRows {
+			return nil
+		} else {
+			return errs.ErrInternalServerError
+		}
+	}
+	return errs.ErrBadParam
+}
+
+func (s *Service) GetUser(param dto.ReqParamUserGet) errs.Response {
+	var err error
+
+	db := s.DB()
+
+	var query strings.Builder
+
+	query.WriteString(`SELECT user_id, nip, name, created_at FROM users WHERE 1=1 `)
+
+	if param.UserID != "" {
+		query.WriteString(fmt.Sprintf("AND user_id = '%s' ", param.UserID))
+	}
+
+	if param.Name != "" {
+		query.WriteString(fmt.Sprintf("AND LOWER(name) LIKE LOWER('%s') ", fmt.Sprintf("%%%s%%", param.Name)))
+	}
+	fmt.Println(param.NIP)
+
+	if param.NIP != "" {
+		fmt.Println(param.NIP)
+		query.WriteString(fmt.Sprintf("AND nip LIKE '%s' ", fmt.Sprintf("%%%s%%", param.NIP)))
+	}
+
+	if param.Role != "" {
+		switch dto.Role(param.Role) {
+		case dto.IT:
+			query.WriteString(fmt.Sprintf("AND role = '%s' ", param.Role))
+		case dto.Nurse:
+			query.WriteString(fmt.Sprintf("AND role = '%s' ", param.Role))
+		default:
+		}
+	}
+
+	if param.CreatedAt == "asc" {
+		query.WriteString("ORDER BY created_at ASC ")
+	} else {
+		query.WriteString("ORDER BY created_at DESC ")
+	}
+	// limit and offset
+	if param.Limit == 0 {
+		param.Limit = 5
+	}
+
+	query.WriteString(fmt.Sprintf("LIMIT %d OFFSET %d", param.Limit, param.Offset))
+	fmt.Println(query.String())
+
+	rows, err := db.Query(query.String())
+	if err != nil {
+		if pgErr, ok := err.(*pgconn.PgError); ok {
+			if pgErr.Code == "02000" {
+				return errs.Response{
+					Code:    http.StatusOK,
+					Message: "Get data successfully, but no data",
+					Data:    []dto.ResUserGet{},
+				}
+			}
+		}
+		return errs.NewInternalError(err.Error(), err)
+	}
+	defer rows.Close()
+
+	results := []dto.ResUserGet{}
+	for rows.Next() {
+		var createdAt time.Time
+		result := dto.ResUserGet{}
+		err := rows.Scan(
+			&result.UserID,
+			&result.NIP,
+			&result.Name,
+			&createdAt)
+		if err != nil {
+			return errs.NewInternalError(err.Error(), err)
+		}
+		result.CreatedAt = createdAt.Format(time.RFC3339)
+		results = append(results, result)
+	}
+	return errs.Response{
+		Code:    http.StatusOK,
+		Message: "Get data successfully",
+		Data:    results,
+	}
 }

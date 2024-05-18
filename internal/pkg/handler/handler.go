@@ -31,6 +31,7 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	userHandler := NewUserHandler(service, &validator.Validate{})
 	patientHandler := NewPatientHandler(service)
 	nurseHandler := NewNurseHandler(service, &validator.Validate{})
+	medicalRecordHandler := NewMedicalRecordHandler(service)
 	imageHandler := NewImageHandler(service)
 
 	// login
@@ -42,6 +43,10 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	nurseGroup := router.Group("/v1/user/")
 	nurseGroup.Use(middleware.JWTAuthMiddleware(cfg))
 	nurseGroup.POST("nurse/register", userHandler.Register)
+	nurseGroup.GET("", userHandler.GetUser)
+	nurseGroup.PUT("nurse/:userId", nurseHandler.UpdateNurse)
+	nurseGroup.DELETE("nurse/:userId", nurseHandler.DeleteNurse)
+	nurseGroup.POST("nurse/:userId/access", nurseHandler.AccessNurse)
 	nurseGroup.POST("nurse/:userId/access", nurseHandler.AccessNurse)
 
 	imageUpload := router.Group("/v1/image/")
@@ -57,6 +62,8 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	medicalRecord.Use(middleware.JWTAuthMiddleware(cfg))
 	medicalRecord.POST("patient", patientHandler.CreatePatient)
 	medicalRecord.GET("patient", patientHandler.GetPatient)
+	medicalRecord.POST("record", medicalRecordHandler.CreateMedicalRecord)
+	medicalRecord.GET("record", medicalRecordHandler.GetMedicalRecord)
 
 	return router.Run(":8080")
 }

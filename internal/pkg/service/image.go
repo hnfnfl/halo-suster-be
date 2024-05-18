@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"halo-suster/internal/pkg/dto"
 	"halo-suster/internal/pkg/errs"
 	"mime/multipart"
@@ -32,7 +33,7 @@ func (s *Service) UploadImageProcess(ctx context.Context, file *multipart.FileHe
 	}
 	defer fileContent.Close()
 
-	output, err := s3.New(sess).PutObject(&s3.PutObjectInput{
+	_, err = s3.New(sess).PutObject(&s3.PutObjectInput{
 		ACL:    aws.String("public-read"),
 		Body:   fileContent,
 		Bucket: aws.String(s.Config().S3Config.Bucket),
@@ -42,14 +43,14 @@ func (s *Service) UploadImageProcess(ctx context.Context, file *multipart.FileHe
 		return errs.NewInternalError("failed to upload image", err)
 	}
 
-	// get the URL of the uploaded file
-	_ = output
+	// return the image URL
+	imageURL := fmt.Sprintf("https://%s.s3-%s.amazonaws.com/%s", s.Config().S3Config.Bucket, s.Config().S3Config.Region, file.Filename)
 
 	return errs.Response{
 		Code:    http.StatusOK,
 		Message: "File uploaded successfully",
 		Data:    dto.ImageResponse{
-			// ImageUrl: s.Config().S3Config.BaseURL + file.Filename,
+			ImageUrl: imageURL,
 		},
 	}
 }

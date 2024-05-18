@@ -70,7 +70,7 @@ func (r RequestCreatePatient) Validate() error {
 		validation.Field(&r.PhoneNumber, validation.Required, phoneNumberValidationRule, validation.Length(10, 16)),
 		validation.Field(&r.Name, validation.Required, validation.Length(3, 30)),
 		validation.Field(&r.BirthDate, validation.Required, validation.By(isISO8601Datetime)),
-		validation.Field(&r.Gender, validation.Required, validation.In(model.Genders)),
+		validation.Field(&r.Gender, validation.Required, validation.In(model.Genders...)),
 		validation.Field(&r.IdentityCardScanImg, validation.Required, imgUrlValidationRule),
 	)
 }

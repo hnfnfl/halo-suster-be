@@ -26,6 +26,11 @@ func (mrh *MedicalRecordHandler) CreateMedicalRecord(ctx *gin.Context) {
 		return
 	}
 
+	if err := request.Validate(); err != nil {
+		errs.NewValidationError("input validation error", err).Send(ctx)
+		return
+	}
+
 	//get user role
 	userId := ctx.Value("userID").(string)
 

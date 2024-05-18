@@ -11,4 +11,5 @@ var (
 	ErrUnauthorized         = errors.New("user is not authorized")
 	ErrInvalidSigningMethod = errors.New("invalid signing method algorithm")
 	ErrTokenExpired         = errors.New("token expired")
+	ErrBadParam             = errors.New("param request is invalid")
 )

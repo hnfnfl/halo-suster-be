@@ -117,3 +117,29 @@ func extractRole(path string) string {
 	}
 	return ""
 }
+
+func (h *UserHandler) GetUser(ctx *gin.Context) {
+	queryParams := ctx.Request.URL.Query()
+	var param dto.ReqParamUserGet
+
+	param.UserID = queryParams.Get("userId")
+	limit, _ := strconv.Atoi(queryParams.Get("limit"))
+	param.Limit = limit
+	offset, _ := strconv.Atoi(queryParams.Get("offset"))
+	param.Offset = offset
+
+	param.Name = queryParams.Get("name")
+	if queryParams.Get("nip") != "" {
+		_, err := strconv.Atoi(queryParams.Get("nip"))
+		if err != nil {
+			errs.NewBadRequestError("param nip should be a number", errs.ErrBadParam).Send(ctx)
+			return
+		} else {
+			param.NIP = queryParams.Get("nip")
+		}
+	}
+	param.Role = dto.Role(queryParams.Get("role"))
+	param.CreatedAt = dto.Sort(queryParams.Get("createdAt"))
+
+	h.service.GetUser(param).Send(ctx)
+}

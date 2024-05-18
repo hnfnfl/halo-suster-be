@@ -27,10 +27,10 @@ const (
 	JWTSecret = "JWT.SECRET"
 	Salt      = "JWT.BCRYPTSALT"
 
-	S3ID     = "S3.ID"
-	S3Secret = "S3.SECRETKEY"
-	S3Bucket = "S3.BUCKETNAME"
-	S3Region = "S3.REGION"
+	S3ID     = "AWS.ACCESS.KEY.ID"
+	S3Secret = "AWS.SECRET.ACCESS.KEY"
+	S3Bucket = "AWS.S3.BUCKET.NAME"
+	S3Region = "AWS.REGION"
 )
 
 var requiredConfig = []string{

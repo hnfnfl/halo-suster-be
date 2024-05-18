@@ -1,14 +1,15 @@
 package dto
 
 import (
-	"strconv"
-	"time"
+	"errors"
+	"fmt"
+	"regexp"
 
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
 type RequestUpdateNurse struct {
-	NIP  int    `json:"nip"`
+	NIP  uint64 `json:"nip"`
 	Name string `json:"name" validate:"required,min=5,max=50"`
 }
 
@@ -26,55 +27,21 @@ func (r RequestCreateAccessNurse) Validate() error {
 	}
 }
 
+func regexMatch(re *regexp.Regexp) validation.RuleFunc {
+	return func(value interface{}) error {
+		s := fmt.Sprintf("%v", value)
+		if !re.MatchString(s) {
+			return errors.New("string doesn't match the rules")
+		}
+		return nil
+	}
+}
+
 func (r RequestUpdateNurse) Validate() error {
-	if err := validation.Validate(r.NIP, validation.Required); err != nil {
-		return validation.NewError("nip", "NIP is required")
-	}
+	nipRegex := regexp.MustCompile("^(303|615)[12][2-9][0-9]{3}(0[1-9]|1[0-2])[0-9]{3,5}$")
 
-	// validate NIP
-	nipStr := strconv.Itoa(r.NIP)
-	if len(nipStr) < 13 || len(nipStr) > 15 {
-		return validation.NewError("nip", "NIP is not valid")
-	}
-
-	if nipStr[:3] != "303" {
-		return validation.NewError("nip", "NIP is not valid")
-	}
-
-	// - the fourth digit, if it's male, fill it with `1`, else `2`
-	genderUser, err := strconv.Atoi(nipStr[3:4])
-	if err != nil {
-		return validation.NewError("nip", "NIP is not valid, the fourth digit, if it's male, fill it with `1`, else `2`")
-	}
-	if genderUser < 1 || genderUser > 2 {
-		return validation.NewError("nip", "NIP is not valid, the fourth digit, if it's male, fill it with `1`, else `2`")
-	}
-
-	// - the fifth and eigth digit, fill it with a year, starts from `2000` till current year
-	yearUser, err := strconv.Atoi(nipStr[4:8])
-	currentYear := time.Now().Year()
-	if err != nil {
-		return validation.NewError("nip", "NIP is not valid, the fifth and eigth digit, fill it with a year, starts from `2000` till current year")
-	}
-	if yearUser < 2000 || yearUser > currentYear {
-		return validation.NewError("nip", "NIP is not valid, the fifth and eigth digit, fill it with a year, starts from `2000` till current year")
-	}
-
-	// - the ninth and tenth, fill it with month, starts from `01` till `12`
-	monthUser, err := strconv.Atoi(nipStr[8:10])
-	if err != nil {
-		return validation.NewError("nip", "NIP is not valid, the ninth and tenth, fill it with month, starts from `01` till `12`")
-	}
-
-	if monthUser < 1 || monthUser > 12 {
-		return validation.NewError("nip", "NIP is not valid, the ninth and tenth, fill it with month, starts from `01` till `12`")
-	}
-
-	if err := validation.ValidateStruct(&r,
-		validation.Field(&r.NIP, validation.Required),
+	return validation.ValidateStruct(&r,
+		validation.Field(&r.NIP, validation.Required, validation.By(regexMatch(nipRegex))),
 		validation.Field(&r.Name, validation.Required, validation.Length(5, 50)),
-	); err != nil {
-		return err
-	}
-	return nil
+	)
 }

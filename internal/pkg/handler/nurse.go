@@ -21,25 +21,24 @@ func NewNurseHandler(s *service.Service, validator *validator.Validate) *NurseHa
 	return &NurseHandler{s, validator}
 }
 
-func (nh *NurseHandler) UpdateNurse(ctx *gin.Context) {
-	request := dto.RequestUpdateNurse{}
-	msg, err := util.JsonBinding(ctx, &request)
+func (h *NurseHandler) UpdateNurse(ctx *gin.Context) {
+	body := dto.RequestUpdateNurse{}
+	userId := ctx.Param("userId")
+	currentUserRole := ctx.Value("userRole").(string)
+
+	msg, err := util.JsonBinding(ctx, &body)
 	if err != nil {
 		errs.NewValidationError(msg, err).Send(ctx)
 		return
 	}
 
-	// validate Request
-	if err := request.Validate(); err != nil {
+	if err := body.Validate(); err != nil {
 		errs.NewValidationError("Request validation error", err).Send(ctx)
 		return
 	}
 
-	userID := ctx.Param("userId")
-	role := ctx.Value("userRole").(string)
-
-	if role == "it" {
-		nh.service.UpdateNurse(request, userID).Send(ctx)
+	if currentUserRole == "it" {
+		h.service.UpdateNurse(userId, body).Send(ctx)
 	} else {
 		errs.NewUnauthorizedError("user is not authorized").Send(ctx)
 		return

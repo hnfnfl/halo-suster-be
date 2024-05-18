@@ -1,11 +1,15 @@
 package service
 
 import (
+	"database/sql"
+	"fmt"
 	"halo-suster/internal/db/model"
 	"halo-suster/internal/pkg/dto"
 	"halo-suster/internal/pkg/errs"
 
 	"net/http"
+
+	"github.com/lib/pq"
 )
 
 func (s *Service) AccessNurse(Nurse model.User) errs.Response {
@@ -33,57 +37,70 @@ func (s *Service) AccessNurse(Nurse model.User) errs.Response {
 	}
 }
 
-func (s *Service) UpdateNurse(req dto.RequestUpdateNurse, userId string) errs.Response {
+func (s *Service) UpdateNurse(userId string, body dto.RequestUpdateNurse) errs.Response {
 	db := s.DB()
+	q := "UPDATE users SET nip = $1, name = $2 WHERE user_id = $3 AND role = 'nurse' RETURNING user_id"
 
-	data, errNotFound := s.FindUserById(userId, "nurse")
-	if errNotFound.Error != "" {
-		return errNotFound
+	var changedRow model.User
+
+	queryErr := db.QueryRow(q, body.NIP, body.Name, userId).Scan(&changedRow.UserID)
+	if queryErr == sql.ErrNoRows {
+		return errs.Response{
+			Code:    http.StatusNotFound,
+			Message: "User not found",
+		}
 	}
-
-	if data.Role != "nurse" {
-		return errs.NewNotFoundError("user is not a nurse (nip not starts with 303)", errs.ErrUserNotFound)
-	}
-
-	err := s.FindExistingNIP(req.NIP, "nurse")
-	if err != nil {
-		return errs.NewGenericError(http.StatusConflict, "nip is exists")
-	}
-
-	stmt := "UPDATE users SET nip = $1, name = $2 where user_id = $3"
-	_, queryErr := db.Exec(stmt, req.NIP, req.Name, userId)
 
 	if queryErr != nil {
-		return errs.NewInternalError("update users error", queryErr)
+		// Check if the error is due to a unique constraint violation (duplicate nik)
+		if pqErr, ok := queryErr.(*pq.Error); ok {
+			if pqErr.Code == "23505" { // Unique violation error code
+				return errs.Response{
+					Code:    http.StatusConflict,
+					Message: "NIP already exists",
+				}
+			}
+		}
+
+		// Handle other types of errors
+		return errs.Response{
+			Code:    http.StatusInternalServerError,
+			Message: fmt.Sprintf("Failed to update nurse: %v", queryErr),
+		}
 	}
 
+	// If no errors, return a success response
 	return errs.Response{
 		Code:    http.StatusOK,
-		Message: "Nurse data successfully updated",
+		Message: "Nurse updated successfully",
 	}
 }
 
 func (s *Service) DeleteNurse(userId string) errs.Response {
 	db := s.DB()
+	q := "DELETE FROM users WHERE user_id = $1 AND role = 'nurse' RETURNING user_id"
 
-	data, errNotFound := s.FindUserById(userId, "nurse")
-	if errNotFound.Error != "" {
-		return errNotFound
+	var deletedRow model.User
+
+	queryErr := db.QueryRow(q, userId).Scan(&deletedRow.UserID)
+	if queryErr == sql.ErrNoRows {
+		return errs.Response{
+			Code:    http.StatusNotFound,
+			Message: "User not found",
+		}
 	}
-
-	if data.Role != "nurse" {
-		return errs.NewNotFoundError("user is not a nurse (nip not starts with 303)", errs.ErrUserNotFound)
-	}
-
-	stmt := "DELETE FROM users where role = 'nurse' and user_id = $1"
-	_, queryErr := db.Exec(stmt, userId)
 
 	if queryErr != nil {
-		return errs.NewInternalError("delete users error", queryErr)
+		// Handle other types of errors
+		return errs.Response{
+			Code:    http.StatusInternalServerError,
+			Message: fmt.Sprintf("Failed to delete nurse: %v", queryErr),
+		}
 	}
 
+	// If no errors, return a success response
 	return errs.Response{
 		Code:    http.StatusOK,
-		Message: "Nurse data successfully updated",
+		Message: "Nurse deleted successfully",
 	}
 }

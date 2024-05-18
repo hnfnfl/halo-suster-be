@@ -56,7 +56,7 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	medicalRecord := router.Group("/v1/medical/")
 	medicalRecord.Use(middleware.JWTAuthMiddleware(cfg))
 	medicalRecord.POST("patient", patientHandler.CreatePatient)
-	// medicalRecord.GET("patient", medicalRecord.)
+	medicalRecord.GET("patient", patientHandler.GetPatient)
 
 	return router.Run(":8080")
 }

@@ -44,3 +44,16 @@ func (ph *PatientHandler) CreatePatient(ctx *gin.Context) {
 
 	ph.Create(data).Send(ctx)
 }
+
+func (ph *PatientHandler) GetPatient(ctx *gin.Context) {
+	var param dto.ReqParamGetPatient
+	param.IdentityNumber = ctx.Query("identity_number")
+	limit, _ := strconv.Atoi(ctx.Query("limit"))
+	param.Limit = limit
+	offset, _ := strconv.Atoi(ctx.Query("offset"))
+	param.Offset = offset
+	param.Name = ctx.Query("name")
+	param.PhoneNumber = ctx.Query("phone_number")
+	param.CreatedAt = dto.Sort(ctx.Query("created_at"))
+	ph.Get(param).Send(ctx)
+}

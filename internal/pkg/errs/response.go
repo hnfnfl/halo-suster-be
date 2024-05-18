@@ -7,7 +7,7 @@ import (
 )
 
 type Response struct {
-	Code int
+	Code int `json:"code,omitempty"`
 
 	Message string      `json:"message,omitempty"`
 	Error   string      `json:"error,omitempty"`

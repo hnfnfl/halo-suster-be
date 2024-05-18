@@ -12,15 +12,7 @@ import (
 func (s *Service) AccessNurse(Nurse model.User) errs.Response {
 	var err error
 
-	tx, err := s.DB().Begin()
-	if err != nil {
-		return errs.NewInternalError("transaction error", err)
-	}
-	defer func() {
-		if err := tx.Rollback(); err != nil {
-			return
-		}
-	}()
+	db := s.DB()
 
 	data, errNotFound := s.FindUserById(Nurse.UserID)
 	if errNotFound.Error != "" {
@@ -32,7 +24,7 @@ func (s *Service) AccessNurse(Nurse model.User) errs.Response {
 	}
 
 	stmt := "UPDATE users SET password = $1 where user_id = $2"
-	_, queryErr := tx.Exec(stmt, Nurse.PasswordHash, Nurse.UserID)
+	_, queryErr := db.Exec(stmt, Nurse.PasswordHash, Nurse.UserID)
 
 	if queryErr != nil {
 		if pgErr, ok := err.(*pgconn.PgError); ok {
@@ -41,10 +33,6 @@ func (s *Service) AccessNurse(Nurse model.User) errs.Response {
 			}
 		}
 		return errs.NewInternalError("insert error", err)
-	}
-
-	if queryErr = tx.Commit(); queryErr != nil {
-		return errs.NewInternalError("commit error", queryErr)
 	}
 
 	return errs.Response{

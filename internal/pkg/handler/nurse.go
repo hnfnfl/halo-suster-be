@@ -39,7 +39,7 @@ func (nh *NurseHandler) UpdateNurse(ctx *gin.Context) {
 	role := ctx.Value("userRole").(string)
 
 	if role == "it" {
-		nh.service.UpdateNurse(request).Send(ctx)
+		nh.service.UpdateNurse(request, userID).Send(ctx)
 	} else {
 		errs.NewUnauthorizedError("user is not authorized").Send(ctx)
 		return

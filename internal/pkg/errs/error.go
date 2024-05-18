@@ -12,4 +12,5 @@ var (
 	ErrInvalidSigningMethod = errors.New("invalid signing method algorithm")
 	ErrTokenExpired         = errors.New("token expired")
 	ErrBadParam             = errors.New("param request is invalid")
+	ErrInternalServerError  = errors.New("internal server error")
 )

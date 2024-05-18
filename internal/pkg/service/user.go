@@ -1,6 +1,7 @@
 package service
 
 import (
+	"database/sql"
 	"fmt"
 	"halo-suster/internal/db/model"
 	"halo-suster/internal/pkg/dto"
@@ -111,21 +112,43 @@ func (s *Service) LoginUser(body model.User) errs.Response {
 	}
 }
 
-func (s *Service) FindUserById(userId string) (model.User, errs.Response) {
-	var err error
-
+func (s *Service) FindUserById(userId string, role string) (model.User, errs.Response) {
 	db := s.DB()
 
 	data := model.User{}
 
 	// check NIP in database
-	q := "SELECT user_id, nip, name, role FROM users WHERE user_id = $1"
+	q := "SELECT user_id, nip, name, role FROM users WHERE role = $2 and user_id = $1"
 
-	queryErr := db.QueryRow(q, userId).Scan(&data.UserID, &data.NIP, &data.Name, &data.Role)
+	queryErr := db.QueryRow(q, userId, role).Scan(&data.UserID, &data.NIP, &data.Name, &data.Role)
 	if queryErr != nil {
-		return model.User{}, errs.NewInternalError("user is not found", err)
+		fmt.Println(queryErr)
+		if queryErr == sql.ErrNoRows {
+			return model.User{}, errs.NewNotFoundError("user is not found", queryErr)
+		} else {
+			return model.User{}, errs.NewInternalError("user is not found", queryErr)
+		}
 	}
 	return data, errs.Response{}
+}
+
+func (s *Service) FindExistingNIP(nip int, role string) error {
+	db := s.DB()
+
+	data := model.User{}
+
+	// check NIP in database
+	q := "SELECT user_id, nip, name, role FROM users WHERE role = $1 and nip = $2"
+
+	queryErr := db.QueryRow(q, role, nip).Scan(&data.UserID, &data.NIP, &data.Name, &data.Role)
+	if queryErr != nil {
+		if queryErr == sql.ErrNoRows {
+			return nil
+		} else {
+			return errs.ErrInternalServerError
+		}
+	}
+	return errs.ErrBadParam
 }
 
 func (s *Service) GetUser(param dto.ReqParamUserGet) errs.Response {

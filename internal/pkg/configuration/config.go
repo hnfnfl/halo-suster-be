@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	localConfig = "./local_configuration"
+	localConfig = "../local_configuration"
 
 	Environment = "ENVIRONMENT"
 	LogLevel    = "LOGLEVEL"

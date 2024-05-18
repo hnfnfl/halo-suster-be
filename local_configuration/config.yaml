@@ -1,4 +1,3 @@
-
 Environment: development
 LogLevel: debug
 AUTHEXPIRY: 1 # in hours

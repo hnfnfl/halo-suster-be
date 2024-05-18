@@ -33,7 +33,7 @@ func (r RequestUpdateNurse) Validate() error {
 
 	// validate NIP
 	nipStr := strconv.Itoa(r.NIP)
-	if len(nipStr) != 13 {
+	if len(nipStr) < 13 || len(nipStr) > 15 {
 		return validation.NewError("nip", "NIP is not valid")
 	}
 

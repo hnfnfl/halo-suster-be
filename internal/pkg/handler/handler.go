@@ -31,7 +31,7 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	userHandler := NewUserHandler(service, &validator.Validate{})
 	patientHandler := NewPatientHandler(service)
 	nurseHandler := NewNurseHandler(service, &validator.Validate{})
-	medicalRecordHandler := NewMedicalRecordHandler(service, &validator.Validate{})
+	medicalRecordHandler := NewMedicalRecordHandler(service)
 
 	// login
 	authGroup := router.Group("/v1/user/")

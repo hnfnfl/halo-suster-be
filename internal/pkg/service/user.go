@@ -8,6 +8,7 @@ import (
 	"halo-suster/internal/pkg/errs"
 	"halo-suster/internal/pkg/middleware"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -27,7 +28,7 @@ func (s *Service) RegisterUser(body model.User) errs.Response {
 	}
 
 	if count > 0 {
-		return errs.NewGenericError(http.StatusUnauthorized, "NIP already registered")
+		return errs.NewGenericError(http.StatusConflict, "NIP already registered")
 	}
 
 	// insert user by role
@@ -52,12 +53,17 @@ func (s *Service) RegisterUser(body model.User) errs.Response {
 		}
 	}
 
+	nip, err := strconv.Atoi(body.NIP)
+	if err != nil {
+		return errs.NewBadRequestError(err.Error(), err)
+	}
+
 	return errs.Response{
 		Code:    http.StatusCreated,
 		Message: "User registered successfully",
 		Data: dto.AuthResponse{
 			UserId:      body.UserID,
-			NIP:         body.NIP,
+			NIP:         nip,
 			Name:        body.Name,
 			AccessToken: token,
 		},
@@ -100,13 +106,18 @@ func (s *Service) LoginUser(body model.User) errs.Response {
 		return errs.NewInternalError("token signing error", err)
 	}
 
+	nip, err := strconv.Atoi(body.NIP)
+	if err != nil {
+		return errs.NewBadRequestError(err.Error(), err)
+	}
+
 	return errs.Response{
 		Code:    http.StatusOK,
 		Message: "User login successfully",
 		Data: dto.AuthResponse{
-			UserId:      out.UserID,
-			NIP:         out.NIP,
-			Name:        out.Name,
+			UserId:      body.UserID,
+			NIP:         nip,
+			Name:        body.Name,
 			AccessToken: token,
 		},
 	}
@@ -167,9 +178,11 @@ func (s *Service) GetUser(param dto.ReqParamUserGet) errs.Response {
 	if param.Name != "" {
 		query.WriteString(fmt.Sprintf("AND LOWER(name) LIKE LOWER('%s') ", fmt.Sprintf("%%%s%%", param.Name)))
 	}
+	fmt.Println(param.NIP)
 
 	if param.NIP != "" {
-		query.WriteString(fmt.Sprintf("AND LOWER(nip) LIKE LOWER('%s') ", fmt.Sprintf("%%%s%%", param.Name)))
+		fmt.Println(param.NIP)
+		query.WriteString(fmt.Sprintf("AND nip LIKE '%s' ", fmt.Sprintf("%%%s%%", param.NIP)))
 	}
 
 	if param.Role != "" {
@@ -193,6 +206,7 @@ func (s *Service) GetUser(param dto.ReqParamUserGet) errs.Response {
 	}
 
 	query.WriteString(fmt.Sprintf("LIMIT %d OFFSET %d", param.Limit, param.Offset))
+	fmt.Println(query.String())
 
 	rows, err := db.Query(query.String())
 	if err != nil {

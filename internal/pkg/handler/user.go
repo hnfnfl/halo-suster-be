@@ -145,18 +145,23 @@ func (h *UserHandler) GetUser(ctx *gin.Context) {
 	var param dto.ReqParamUserGet
 
 	param.UserID = queryParams.Get("userId")
-	limit, err := strconv.Atoi(queryParams.Get("limit"))
-	if err != nil {
-		errs.NewBadRequestError("param limit should be a number", errs.ErrBadParam).Send(ctx)
-		return
+	if queryParams.Get("limit") != "" {
+		limit, err := strconv.Atoi(queryParams.Get("limit"))
+		if err != nil {
+			errs.NewBadRequestError("param limit should be a number", errs.ErrBadParam).Send(ctx)
+			return
+		}
+		param.Limit = limit
 	}
-	param.Limit = limit
-	offset, err := strconv.Atoi(queryParams.Get("offset"))
-	if err != nil {
-		errs.NewBadRequestError("param offset should be a number", errs.ErrBadParam).Send(ctx)
-		return
+
+	if queryParams.Get("offset") != "" {
+		offset, err := strconv.Atoi(queryParams.Get("offset"))
+		if err != nil {
+			errs.NewBadRequestError("param offset should be a number", errs.ErrBadParam).Send(ctx)
+			return
+		}
+		param.Offset = offset
 	}
-	param.Offset = offset
 
 	param.Name = queryParams.Get("name")
 	if queryParams.Get("nip") != "" {

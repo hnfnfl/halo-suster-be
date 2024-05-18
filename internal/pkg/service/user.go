@@ -121,8 +121,7 @@ func (s *Service) FindUserById(userId string) (model.User, errs.Response) {
 	// check NIP in database
 	q := "SELECT user_id, nip, name, role FROM users WHERE user_id = $1"
 
-	queryErr := db.QueryRow(q, userId).Scan(&data.UserID, data.NIP, data.Role)
-
+	queryErr := db.QueryRow(q, userId).Scan(&data.UserID, &data.NIP, &data.Name, &data.Role)
 	if queryErr != nil {
 		return model.User{}, errs.NewInternalError("user is not found", err)
 	}

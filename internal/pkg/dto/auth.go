@@ -47,7 +47,7 @@ func (r RegisterRequest) Validate() error {
 	}
 
 	// 	- the fifth and eigth digit, fill it with a year, starts from `2000` till current year
-	yearUser, err := strconv.Atoi(nipStr[5:9])
+	yearUser, err := strconv.Atoi(nipStr[4:8])
 	currentYear := time.Now().Year()
 	if err != nil {
 		return validation.NewError("nip", "NIP is not valid, the fifth and eigth digit, fill it with a year, starts from `2000` till current year")
@@ -57,7 +57,7 @@ func (r RegisterRequest) Validate() error {
 	}
 
 	// 	- the ninth and tenth, fill it with month, starts from `01` till `12`
-	monthUser, err := strconv.Atoi(nipStr[9:11])
+	monthUser, err := strconv.Atoi(nipStr[8:10])
 	if err != nil {
 		return validation.NewError("nip", "NIP is not valid, the ninth and tenth, fill it with month, starts from `01` till `12`")
 	}

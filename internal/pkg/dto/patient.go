@@ -59,13 +59,6 @@ func (r RequestCreatePatient) Validate() error {
 	)
 }
 
-type Sort string
-
-const (
-	ASC  Sort = "ASC"
-	DESC Sort = "DESC"
-)
-
 type ReqParamGetPatient struct {
 	IdentityNumber string `json:"identityNumber"`
 	Limit          int    `json:"limit"`

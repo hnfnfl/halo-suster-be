@@ -2,6 +2,11 @@ package model
 
 import "time"
 
+var NIPUsers = map[string]bool{
+	"605": true,
+	"303": true,
+}
+
 type User struct {
 	UserID       string    `db:"user_id"`
 	NIP          string    `db:"nip"`

@@ -49,7 +49,7 @@ func (s *Service) UploadImageProcess(ctx context.Context, file *multipart.FileHe
 	return errs.Response{
 		Code:    http.StatusOK,
 		Message: "File uploaded successfully",
-		Data:    dto.ImageResponse{
+		Data: dto.ImageResponse{
 			ImageUrl: imageURL,
 		},
 	}

@@ -2,12 +2,12 @@ package handler
 
 import (
 	"fmt"
-	"time"
 	"halo-suster/internal/pkg/errs"
 	"halo-suster/internal/pkg/service"
 	"path/filepath"
 
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 )
 
 type ImageHandler struct {
@@ -45,10 +45,9 @@ func (h *ImageHandler) UploadImage(ctx *gin.Context) {
 		return
 	}
 
-	// Rename the file with timestamp and userID
-	userId := ctx.Value("userID").(string)
-	timeStamp := time.Now().Unix()
-	file.Filename = fmt.Sprintf("%s_%d_%s", userId, timeStamp, file.Filename) 
+	// Rename the file with UUID
+	uuid := uuid.New()
+	file.Filename = fmt.Sprintf("%s%s", uuid, filepath.Ext(file.Filename))
 
 	// If the file passes all checks, you can continue with your processing
 	h.UploadImageProcess(ctx, file).Send(ctx)

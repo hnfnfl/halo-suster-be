@@ -47,7 +47,6 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	nurseGroup.PUT("nurse/:userId", nurseHandler.UpdateNurse)
 	nurseGroup.DELETE("nurse/:userId", nurseHandler.DeleteNurse)
 	nurseGroup.POST("nurse/:userId/access", nurseHandler.AccessNurse)
-	nurseGroup.POST("nurse/:userId/access", nurseHandler.AccessNurse)
 
 	imageUpload := router.Group("/v1/image/")
 	imageUpload.Use(middleware.JWTAuthMiddleware(cfg))

@@ -31,6 +31,7 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	userHandler := NewUserHandler(service, &validator.Validate{})
 	patientHandler := NewPatientHandler(service)
 	nurseHandler := NewNurseHandler(service, &validator.Validate{})
+	medicalRecordHandler := NewMedicalRecordHandler(service)
 
 	// login
 	authGroup := router.Group("/v1/user/")
@@ -55,6 +56,7 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	medicalRecord.Use(middleware.JWTAuthMiddleware(cfg))
 	medicalRecord.POST("patient", patientHandler.CreatePatient)
 	medicalRecord.GET("patient", patientHandler.GetPatient)
+	medicalRecord.POST("record", medicalRecordHandler.CreateMedicalRecord)
 
 	return router.Run(":8080")
 }

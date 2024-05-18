@@ -65,8 +65,20 @@ func (h *UserHandler) Register(ctx *gin.Context) {
 		data.Role = "nurse"
 		data.CardImage = *body.CardImage
 	}
+	role := extractRole(ctx.FullPath())
 
-	h.service.RegisterUser(data).Send(ctx)
+	switch role {
+	case "it":
+		h.service.RegisterUser(data).Send(ctx)
+	case "nurse":
+		role := ctx.Value("userRole").(string)
+		if role == "it" {
+			h.service.RegisterUser(data).Send(ctx)
+		} else {
+			errs.NewUnauthorizedError("user is not authorized").Send(ctx)
+			return
+		}
+	}
 }
 
 func (h *UserHandler) Login(ctx *gin.Context) {
@@ -92,6 +104,11 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 
 	switch role {
 	case "it":
+		// validate Request
+		if err := body.Validate(); err != nil {
+			errs.NewValidationError("Request validation error", err).Send(ctx)
+			return
+		}
 		if strconv.Itoa(body.NIP)[:3] == "615" {
 			data.Role = "it"
 		} else {
@@ -99,6 +116,11 @@ func (h *UserHandler) Login(ctx *gin.Context) {
 			return
 		}
 	case "nurse":
+		// validate Request
+		if err := body.Validate(); err != nil {
+			errs.NewValidationError("Request validation error", err).Send(ctx)
+			return
+		}
 		if strconv.Itoa(body.NIP)[:3] == "303" {
 			data.Role = "nurse"
 		} else {
@@ -123,9 +145,17 @@ func (h *UserHandler) GetUser(ctx *gin.Context) {
 	var param dto.ReqParamUserGet
 
 	param.UserID = queryParams.Get("userId")
-	limit, _ := strconv.Atoi(queryParams.Get("limit"))
+	limit, err := strconv.Atoi(queryParams.Get("limit"))
+	if err != nil {
+		errs.NewBadRequestError("param limit should be a number", errs.ErrBadParam).Send(ctx)
+		return
+	}
 	param.Limit = limit
-	offset, _ := strconv.Atoi(queryParams.Get("offset"))
+	offset, err := strconv.Atoi(queryParams.Get("offset"))
+	if err != nil {
+		errs.NewBadRequestError("param offset should be a number", errs.ErrBadParam).Send(ctx)
+		return
+	}
 	param.Offset = offset
 
 	param.Name = queryParams.Get("name")
@@ -141,5 +171,12 @@ func (h *UserHandler) GetUser(ctx *gin.Context) {
 	param.Role = dto.Role(queryParams.Get("role"))
 	param.CreatedAt = dto.Sort(queryParams.Get("createdAt"))
 
-	h.service.GetUser(param).Send(ctx)
+	role := ctx.Value("userRole").(string)
+
+	if role == "it" {
+		h.service.GetUser(param).Send(ctx)
+	} else {
+		errs.NewUnauthorizedError("user is not authorized").Send(ctx)
+		return
+	}
 }

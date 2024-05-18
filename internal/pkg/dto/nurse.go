@@ -13,7 +13,7 @@ func (r RequestCreateAccessNurse) Validate() error {
 		validation.Field(&r.Password, validation.Required, validation.Length(5, 33)),
 	); err != nil {
 		return err
+	} else {
+		return nil
 	}
-
-	return validation.NewError("password", "Password is required")
 }

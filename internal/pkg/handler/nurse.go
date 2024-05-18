@@ -21,6 +21,44 @@ func NewNurseHandler(s *service.Service, validator *validator.Validate) *NurseHa
 	return &NurseHandler{s, validator}
 }
 
+func (nh *NurseHandler) UpdateNurse(ctx *gin.Context) {
+	request := dto.RequestUpdateNurse{}
+	msg, err := util.JsonBinding(ctx, &request)
+	if err != nil {
+		errs.NewValidationError(msg, err).Send(ctx)
+		return
+	}
+
+	// validate Request
+	if err := request.Validate(); err != nil {
+		errs.NewValidationError("Request validation error", err).Send(ctx)
+		return
+	}
+
+	userID := ctx.Param("userId")
+	role := ctx.Value("userRole").(string)
+
+	if role == "it" {
+		nh.service.UpdateNurse(request).Send(ctx)
+	} else {
+		errs.NewUnauthorizedError("user is not authorized").Send(ctx)
+		return
+	}
+}
+
+func (nh *NurseHandler) DeleteNurse(ctx *gin.Context) {
+
+	userID := ctx.Param("userId")
+	role := ctx.Value("userRole").(string)
+
+	if role == "it" {
+		nh.service.DeleteNurse(userID).Send(ctx)
+	} else {
+		errs.NewUnauthorizedError("user is not authorized").Send(ctx)
+		return
+	}
+}
+
 func (nh *NurseHandler) AccessNurse(ctx *gin.Context) {
 	request := dto.RequestCreateAccessNurse{}
 	msg, err := util.JsonBinding(ctx, &request)
@@ -46,9 +84,10 @@ func (nh *NurseHandler) AccessNurse(ctx *gin.Context) {
 	}
 	data.PasswordHash = passHash
 	data.UserID = ctx.Param("userId")
-	data.Role = ctx.Value("userRole").(string)
 
-	if data.Role == "it" {
+	role := ctx.Value("userRole").(string)
+
+	if role == "it" {
 		nh.service.AccessNurse(data).Send(ctx)
 	} else {
 		errs.NewUnauthorizedError("user is not authorized").Send(ctx)

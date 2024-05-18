@@ -42,6 +42,8 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	nurseGroup.Use(middleware.JWTAuthMiddleware(cfg))
 	nurseGroup.POST("nurse/register", userHandler.Register)
 	nurseGroup.GET("", userHandler.GetUser)
+	nurseGroup.PUT("nurse/:userId", nurseHandler.UpdateNurse)
+	nurseGroup.DELETE("nurse/:userId", nurseHandler.DeleteNurse)
 	nurseGroup.POST("nurse/:userId/access", nurseHandler.AccessNurse)
 	// nurseGroup.GET("nurse/ping", func(c *gin.Context) {
 	// 	c.JSON(200, gin.H{

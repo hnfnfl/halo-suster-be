@@ -22,7 +22,7 @@ func NewPatientHandler(s *service.Service) *PatientHandler {
 func (ph *PatientHandler) CreatePatient(ctx *gin.Context) {
 	request := dto.RequestCreatePatient{}
 	if err := ctx.ShouldBindJSON(&request); err != nil {
-		errs.NewInternalError("JSON binding error", err).Send(ctx)
+		errs.NewBadRequestError("JSON binding error", err).Send(ctx)
 		return
 	}
 
@@ -51,7 +51,7 @@ func (ph *PatientHandler) GetPatient(ctx *gin.Context) {
 	if ctx.Query("limit") != "" {
 		limit, err := strconv.Atoi(ctx.Query("limit"))
 		if err != nil {
-			errs.NewInternalError("error convert param limit", err).Send(ctx)
+			errs.NewBadRequestError("error convert param limit", err).Send(ctx)
 			return
 		}
 		param.Limit = limit
@@ -61,7 +61,7 @@ func (ph *PatientHandler) GetPatient(ctx *gin.Context) {
 	if ctx.Query("offset") != "" {
 		offset, err := strconv.Atoi(ctx.Query("offset"))
 		if err != nil {
-			errs.NewInternalError("error convert param offset", err).Send(ctx)
+			errs.NewBadRequestError("error convert param offset", err).Send(ctx)
 			return
 		}
 		param.Offset = offset

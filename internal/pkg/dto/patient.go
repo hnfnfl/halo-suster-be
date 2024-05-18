@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"halo-suster/internal/db/model"
 	"regexp"
 	"strconv"
 	"strings"
@@ -14,6 +15,14 @@ func isISO8601Date(value interface{}) error {
 	_, err := time.Parse("2006-01-02", str)
 	if err != nil {
 		return validation.NewError("validation_iso8601_date", "must be a valid ISO 8601 date (yyyy-mm-dd)")
+	}
+	return nil
+}
+func isISO8601Datetime(value interface{}) error {
+	str, _ := value.(string)
+	_, err := time.Parse("2006-01-02T15:04:05Z07:00", str)
+	if err != nil {
+		return validation.NewError("validation_iso8601_datetime", "must be a valid ISO 8601 date (yyyy-mm-dd)")
 	}
 	return nil
 }
@@ -41,21 +50,28 @@ type ResponseCreatePatient struct {
 }
 
 func (r RequestCreatePatient) Validate() error {
-	result := strconv.Itoa(*r.IdentityNumber)
+	var identityNumberStr string
+	if r.IdentityNumber != nil {
+		identityNumberStr = strconv.Itoa(*r.IdentityNumber)
+	}
+	if len(identityNumberStr) != 16 {
+		return validation.NewError("identityNumber", "identityNumber is not valid")
+	}
+
 	// if(len() != 16) {
 	// 	return validation.NewError("identityNumber", "Identity Number must be 16 digits")
 	// }
-	err := validation.Validate(result, validation.Required, validation.Length(16, 16))
-	if err != nil {
-		return validation.NewError("identityNumber", "Identity Number must be 16 digits")
-	}
+	// err := validation.Validate(result, validation.Required, validation.Length(16, 16))
+	// if err != nil {
+	// 	return validation.NewError("identityNumber", "Identity Number must be 16 digits")
+	// }
 	return validation.ValidateStruct(&r,
-		// validation.Field(&r.IdentityNumber, validation.Required, validation.Length(16, 16)),
-		// validation.Field(&result, validation.Required, phoneNumberValidationRule, validation.Length(10, 16)),
+		validation.Field(&r.IdentityNumber, validation.Required),
+		validation.Field(&r.PhoneNumber, validation.Required, phoneNumberValidationRule, validation.Length(10, 16)),
 		validation.Field(&r.Name, validation.Required, validation.Length(3, 30)),
-		validation.Field(&r.BirthDate, validation.Required, validation.By(isISO8601Date)),
-		// validation.Field(&r.Gender, validation.Required, validation.In(model.Genders...)),
-		// validation.Field(&r.IdentityCardScanImg, validation.Required, imgUrlValidationRule),
+		validation.Field(&r.BirthDate, validation.Required, validation.By(isISO8601Datetime)),
+		validation.Field(&r.Gender, validation.Required, validation.In(model.Genders)),
+		validation.Field(&r.IdentityCardScanImg, validation.Required, imgUrlValidationRule),
 	)
 }
 

@@ -2,6 +2,7 @@ package handler
 
 import (
 	"fmt"
+	"time"
 	"halo-suster/internal/pkg/errs"
 	"halo-suster/internal/pkg/service"
 	"path/filepath"
@@ -43,6 +44,11 @@ func (h *ImageHandler) UploadImage(ctx *gin.Context) {
 		).Send(ctx)
 		return
 	}
+
+	// Rename the file with timestamp and userID
+	userId := ctx.Value("userID").(string)
+	timeStamp := time.Now().Unix()
+	file.Filename = fmt.Sprintf("%s_%d_%s", userId, timeStamp, file.Filename) 
 
 	// If the file passes all checks, you can continue with your processing
 	h.UploadImageProcess(ctx, file).Send(ctx)

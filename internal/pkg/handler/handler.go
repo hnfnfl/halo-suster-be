@@ -8,7 +8,6 @@ import (
 	"halo-suster/internal/pkg/service"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/sirupsen/logrus"
 )
 
@@ -28,9 +27,9 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	})
 
 	service := service.NewService(cfg, db)
-	userHandler := NewUserHandler(service, &validator.Validate{})
+	userHandler := NewUserHandler(service)
 	patientHandler := NewPatientHandler(service)
-	nurseHandler := NewNurseHandler(service, &validator.Validate{})
+	nurseHandler := NewNurseHandler(service)
 	medicalRecordHandler := NewMedicalRecordHandler(service)
 	imageHandler := NewImageHandler(service)
 
@@ -43,7 +42,7 @@ func Run(cfg *configuration.Configuration, log *logrus.Logger) error {
 	nurseGroup := router.Group("/v1/user/")
 	nurseGroup.Use(middleware.JWTAuthMiddleware(cfg))
 	nurseGroup.POST("nurse/register", userHandler.Register)
-	nurseGroup.GET("", userHandler.GetUser)
+	nurseGroup.GET("", userHandler.GetUsers)
 	nurseGroup.PUT("nurse/:userId", nurseHandler.UpdateNurse)
 	nurseGroup.DELETE("nurse/:userId", nurseHandler.DeleteNurse)
 	nurseGroup.POST("nurse/:userId/access", nurseHandler.AccessNurse)

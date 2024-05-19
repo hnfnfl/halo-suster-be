@@ -9,16 +9,14 @@ import (
 	"halo-suster/internal/pkg/util"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
 
 type NurseHandler struct {
-	service   *service.Service
-	validator *validator.Validate
+	service *service.Service
 }
 
-func NewNurseHandler(s *service.Service, validator *validator.Validate) *NurseHandler {
-	return &NurseHandler{s, validator}
+func NewNurseHandler(s *service.Service) *NurseHandler {
+	return &NurseHandler{s}
 }
 
 func (h *NurseHandler) UpdateNurse(ctx *gin.Context) {

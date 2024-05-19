@@ -129,7 +129,7 @@ func (s *Service) FindUserById(userId string, role string) (model.User, errs.Res
 	data := model.User{}
 
 	// check NIP in database
-	q := "SELECT user_id, nip, name, role FROM users WHERE role = $2 and user_id = $1"
+	q := "SELECT user_id, nip, name, role FROM users WHERE role = $2 AND user_id = $1"
 
 	queryErr := db.QueryRow(q, userId, role).Scan(&data.UserID, &data.NIP, &data.Name, &data.Role)
 	if queryErr != nil {
@@ -235,7 +235,7 @@ func (s *Service) GetUser(param dto.ReqParamUserGet) errs.Response {
 		if err != nil {
 			return errs.NewInternalError(err.Error(), err)
 		}
-		result.CreatedAt = createdAt.Format(time.RFC3339)
+		result.CreatedAt = createdAt.Format(time.RFC3339Nano)
 		results = append(results, result)
 	}
 	return errs.Response{

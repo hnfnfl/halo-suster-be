@@ -26,13 +26,18 @@ func (mrh *MedicalRecordHandler) CreateMedicalRecord(ctx *gin.Context) {
 		return
 	}
 
+	if err := request.Validate(); err != nil {
+		errs.NewValidationError("input validation error", err).Send(ctx)
+		return
+	}
+
 	//get user role
-	userId := ctx.Value("userID").(string)
+	userNIP := ctx.Value("userNIP").(string)
 
 	data := model.MedicalRecord{
 		UniqueID:       util.UuidGenerator(""),
 		IdentityNumber: strconv.Itoa(*request.IdentityNumber),
-		CreatorID:      userId,
+		CreatorID:      userNIP,
 		Symptoms:       request.Symptoms,
 		Medication:     request.Medications,
 	}
@@ -71,6 +76,6 @@ func (mrh *MedicalRecordHandler) GetMedicalRecord(ctx *gin.Context) {
 	// param.Offset = offset
 	param.UserId = ctx.Query("createdBy.userId")
 	param.Nip = ctx.Query("createdBy.nip")
-	param.CreatedAt = dto.Sort(ctx.Query("created_at"))
+	param.CreatedAt = dto.Sort(ctx.Query("createdAt"))
 	mrh.service.GetAllMedicalRecord(param).Send(ctx)
 }

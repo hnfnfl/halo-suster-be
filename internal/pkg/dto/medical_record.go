@@ -13,10 +13,12 @@ type RequestCreateMedicalRecord struct {
 }
 
 func (r RequestCreateMedicalRecord) Validate() error {
-	result := strconv.Itoa(*r.IdentityNumber)
-	err := validation.Validate(result, validation.Required, validation.Length(16, 16))
-	if err != nil {
-		return validation.NewError("identityNumber", "Identity Number must be 16 digits")
+	var identityNumberStr string
+	if r.IdentityNumber != nil {
+		identityNumberStr = strconv.Itoa(*r.IdentityNumber)
+	}
+	if len(identityNumberStr) != 16 {
+		return validation.NewError("identityNumber", "identityNumber is not valid")
 	}
 	if err := validation.ValidateStruct(&r,
 		validation.Field(&r.Symptoms, validation.Required, validation.Length(1, 2000)),

@@ -9,7 +9,7 @@ const (
 	Female PatientGender = "female"
 )
 
-var Genders = []string{"male", "female"}
+var Genders = []interface{}{string(Male), string(Female)}
 
 type Patient struct {
 	IdentityNumber string        `db:"user_id"`

@@ -18,6 +18,7 @@ func (s *Service) Create(patient model.Patient) errs.Response {
 		return errs.NewInternalError("insert error", err)
 	}
 	return errs.Response{
+		Code:    http.StatusCreated,
 		Message: "Medical patient successfully added",
 		Data: dto.ResponseCreatePatient{
 			Name: patient.Name,
@@ -33,13 +34,13 @@ func (s *Service) Get(param dto.ReqParamGetPatient) errs.Response {
 
 	query.WriteString("SELECT identity_number, name, birth_date, phone_number, gender, created_at FROM patients WHERE 1=1 ")
 	if param.IdentityNumber != "" {
-		query.WriteString("AND identity_number = " + param.IdentityNumber)
+		query.WriteString(fmt.Sprintf("AND identity_number LIKE '%%%s%%' ", param.IdentityNumber))
 	}
 	if param.Name != "" {
 		query.WriteString(fmt.Sprintf("AND name LIKE '%%%s%%' ", strings.ToLower(param.Name)))
 	}
 	if param.PhoneNumber != "" {
-		query.WriteString("AND phone_number = +" + param.PhoneNumber)
+		query.WriteString(fmt.Sprintf("AND phone_number LIKE '%%%s%%' ", strings.ToLower(param.Name)))
 	}
 
 	if param.CreatedAt == "asc" {
@@ -72,8 +73,8 @@ func (s *Service) Get(param dto.ReqParamGetPatient) errs.Response {
 			&result.Gender,
 			&createdAt,
 		)
-		result.BirthDate = birthDate.Format(time.RFC3339)
-		result.CreatedAt = createdAt.Format(time.RFC3339)
+		result.BirthDate = birthDate.Format(time.RFC3339Nano)
+		result.CreatedAt = createdAt.Format(time.RFC3339Nano)
 		if err != nil {
 			return errs.NewInternalError("error scan query db", err)
 		}

@@ -8,8 +8,6 @@ import (
 	"halo-suster/internal/pkg/errs"
 
 	"net/http"
-
-	"github.com/lib/pq"
 )
 
 func (s *Service) AccessNurse(Nurse model.User) errs.Response {
@@ -38,34 +36,38 @@ func (s *Service) AccessNurse(Nurse model.User) errs.Response {
 }
 
 func (s *Service) UpdateNurse(userId string, body dto.RequestUpdateNurse) errs.Response {
-	db := s.DB()
-	q := "UPDATE users SET nip = $1, name = $2 WHERE user_id = $3 AND role = 'nurse' RETURNING user_id"
-
 	var changedRow model.User
+	db := s.DB()
 
-	queryErr := db.QueryRow(q, body.NIP, body.Name, userId).Scan(&changedRow.UserID)
-	if queryErr == sql.ErrNoRows {
+	// count the number of nurses with the same NIP
+	q := "SELECT COUNT(*) FROM users WHERE nip = $1 AND role = 'nurse'"
+	var count int
+	if err := db.QueryRow(q, body.NIP).Scan(&count); err != nil {
 		return errs.Response{
-			Code:    http.StatusNotFound,
-			Message: "User not found",
+			Code:    http.StatusInternalServerError,
+			Message: "query error",
 		}
 	}
 
-	if queryErr != nil {
-		// Check if the error is due to a unique constraint violation (duplicate nik)
-		if pqErr, ok := queryErr.(*pq.Error); ok {
-			if pqErr.Code == "23505" { // Unique violation error code
-				return errs.Response{
-					Code:    http.StatusConflict,
-					Message: "NIP already exists",
-				}
-			}
-		}
-
-		// Handle other types of errors
+	if count > 0 {
 		return errs.Response{
-			Code:    http.StatusInternalServerError,
-			Message: fmt.Sprintf("Failed to update nurse: %v", queryErr),
+			Code:    http.StatusConflict,
+			Message: "NIP already exists",
+		}
+	}
+
+	q = "UPDATE users SET nip = $1, name = $2 WHERE user_id = $3 AND role = 'nurse' RETURNING user_id"
+	if err := db.QueryRow(q, body.NIP, body.Name, userId).Scan(&changedRow.UserID); err != nil {
+		if err == sql.ErrNoRows {
+			return errs.Response{
+				Code:    http.StatusNotFound,
+				Message: "User not found",
+			}
+		} else {
+			return errs.Response{
+				Code:    http.StatusInternalServerError,
+				Message: fmt.Sprintf("Failed to update nurse: %v", err),
+			}
 		}
 	}
 

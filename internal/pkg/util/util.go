@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net/url"
+	"regexp"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,11 +45,12 @@ func JsonBinding(ctx *gin.Context, in interface{}) (string, error) {
 	return "", nil
 }
 
-// func CompileError(errMsg ...error) error {
-// 	var errStr string
-// 	for _, err := range errMsg {
-// 		errStr += err.Error() + "; "
-// 	}
+func IsValidUrl(in string) bool {
+	u, err := url.ParseRequestURI(in)
+	if err != nil || u.Scheme == "" || u.Host == "" {
+		return false
+	}
 
-// 	return fmt.Errorf(errStr)
-// }
+	re := regexp.MustCompile(`\.[a-zA-Z]+$`)
+	return re.MatchString(u.Host)
+}

@@ -10,14 +10,6 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-func isISO8601Date(value interface{}) error {
-	str, _ := value.(string)
-	_, err := time.Parse("2006-01-02", str)
-	if err != nil {
-		return validation.NewError("validation_iso8601_date", "must be a valid ISO 8601 date (yyyy-mm-dd)")
-	}
-	return nil
-}
 func isISO8601Datetime(value interface{}) error {
 	str, _ := value.(string)
 	_, err := time.Parse("2006-01-02T15:04:05Z07:00", str)
@@ -70,7 +62,7 @@ func (r RequestCreatePatient) Validate() error {
 		validation.Field(&r.PhoneNumber, validation.Required, phoneNumberValidationRule, validation.Length(10, 16)),
 		validation.Field(&r.Name, validation.Required, validation.Length(3, 30)),
 		validation.Field(&r.BirthDate, validation.Required, validation.By(isISO8601Datetime)),
-		validation.Field(&r.Gender, validation.Required, validation.In(model.Genders)),
+		validation.Field(&r.Gender, validation.Required, validation.In(model.Genders...)),
 		validation.Field(&r.IdentityCardScanImg, validation.Required, imgUrlValidationRule),
 	)
 }

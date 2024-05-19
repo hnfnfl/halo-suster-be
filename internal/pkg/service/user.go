@@ -235,7 +235,7 @@ func (s *Service) GetUser(param dto.ReqParamUserGet) errs.Response {
 		if err != nil {
 			return errs.NewInternalError(err.Error(), err)
 		}
-		result.CreatedAt = createdAt.Format(time.RFC3339)
+		result.CreatedAt = createdAt.Format(time.RFC3339Nano)
 		results = append(results, result)
 	}
 	return errs.Response{

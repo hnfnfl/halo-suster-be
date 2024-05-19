@@ -40,7 +40,7 @@ func (s *Service) Get(param dto.ReqParamGetPatient) errs.Response {
 		query.WriteString(fmt.Sprintf("AND name LIKE '%%%s%%' ", strings.ToLower(param.Name)))
 	}
 	if param.PhoneNumber != "" {
-		query.WriteString("AND phone_number = +" + param.PhoneNumber)
+		query.WriteString(fmt.Sprintf("AND phone_number LIKE '%%%s%%' ", strings.ToLower(param.Name)))
 	}
 
 	if param.CreatedAt == "asc" {
@@ -73,8 +73,8 @@ func (s *Service) Get(param dto.ReqParamGetPatient) errs.Response {
 			&result.Gender,
 			&createdAt,
 		)
-		result.BirthDate = birthDate.Format(time.RFC3339)
-		result.CreatedAt = createdAt.Format(time.RFC3339)
+		result.BirthDate = birthDate.Format(time.RFC3339Nano)
+		result.CreatedAt = createdAt.Format(time.RFC3339Nano)
 		if err != nil {
 			return errs.NewInternalError("error scan query db", err)
 		}

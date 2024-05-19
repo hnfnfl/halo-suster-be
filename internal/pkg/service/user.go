@@ -129,7 +129,7 @@ func (s *Service) FindUserById(userId string, role string) (model.User, errs.Res
 	data := model.User{}
 
 	// check NIP in database
-	q := "SELECT user_id, nip, name, role FROM users WHERE role = $2 and user_id = $1"
+	q := "SELECT user_id, nip, name, role FROM users WHERE role = $2 AND user_id = $1"
 
 	queryErr := db.QueryRow(q, userId, role).Scan(&data.UserID, &data.NIP, &data.Name, &data.Role)
 	if queryErr != nil {

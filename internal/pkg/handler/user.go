@@ -11,16 +11,14 @@ import (
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
 
 type UserHandler struct {
-	service   *service.Service
-	validator *validator.Validate
+	service *service.Service
 }
 
-func NewUserHandler(s *service.Service, validator *validator.Validate) *UserHandler {
-	return &UserHandler{s, validator}
+func NewUserHandler(s *service.Service) *UserHandler {
+	return &UserHandler{s}
 }
 
 func (h *UserHandler) Register(ctx *gin.Context) {
@@ -138,7 +136,7 @@ func extractRole(path string) string {
 	return ""
 }
 
-func (h *UserHandler) GetUser(ctx *gin.Context) {
+func (h *UserHandler) GetUsers(ctx *gin.Context) {
 	queryParams := ctx.Request.URL.Query()
 	var param dto.ReqParamUserGet
 

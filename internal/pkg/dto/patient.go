@@ -10,14 +10,6 @@ import (
 	validation "github.com/go-ozzo/ozzo-validation/v4"
 )
 
-func isISO8601Date(value interface{}) error {
-	str, _ := value.(string)
-	_, err := time.Parse("2006-01-02", str)
-	if err != nil {
-		return validation.NewError("validation_iso8601_date", "must be a valid ISO 8601 date (yyyy-mm-dd)")
-	}
-	return nil
-}
 func isISO8601Datetime(value interface{}) error {
 	str, _ := value.(string)
 	_, err := time.Parse("2006-01-02T15:04:05Z07:00", str)

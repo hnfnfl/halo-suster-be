@@ -1,6 +1,7 @@
 package dto
 
 import (
+	"halo-suster/internal/pkg/util"
 	"strconv"
 	"time"
 
@@ -33,6 +34,7 @@ func (r RegisterRequest) Validate() error {
 
 	// validate NIP
 	nipStr := strconv.Itoa(r.NIP)
+	role := nipStr[:3]
 	if len(nipStr) < 13 || len(nipStr) > 15 {
 		return validation.NewError("nip", "NIP is not valid")
 	}
@@ -73,11 +75,17 @@ func (r RegisterRequest) Validate() error {
 		return err
 	}
 
+	if r.CardImage != nil && role == "303" {
+		if !util.IsValidUrl(*r.CardImage) {
+			return validation.NewError("identityCardScanImg", "image url is not valid")
+		}
+	}
+
 	// - first until third digit, should start with `615`
-	if nipStr[:3] == "615" {
+	if role == "615" {
 		// validate as IT
 		return validation.ValidateStruct(&r, validation.Field(&r.Password, validation.Required, validation.Length(5, 33)))
-	} else if nipStr[:3] == "303" {
+	} else if role == "303" {
 		// validate as Nurse
 		return validation.ValidateStruct(&r, validation.Field(&r.CardImage, validation.Required))
 	} else {

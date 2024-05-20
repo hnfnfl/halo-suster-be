@@ -1,4 +1,4 @@
-version: '3.8'
+version: "3.8"
 
 services:
   postgres:
@@ -8,12 +8,37 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: admin
       POSTGRES_DB: halo-suster
-    ports: 
+    ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    restart: 
-      unless-stopped
+    restart: unless-stopped
+
+  haloSuster:
+    image: halo-suster-be:latest
+    container_name: haloSuster
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgres
+    environment:
+      - ENVIRONMENT=development
+      - LOGLEVEL=debug
+      - AUTHEXPIRY=1
+      - DB_NAME=halo-suster
+      - DB_PORT=5432
+      - DB_HOST= # fill with your db host 
+      - DB_USERNAME=postgres
+      - DB_PASSWORD= # fill with your password
+      - DB_PARAMS=sslmode=disable
+      - DB_MAXIDLECONNS=20
+      - DB_MAXOPENCONNS=20
+      - JWT_SECRET=mysecret # fill with your secret
+      - JWT_BCRYPTSALT=10
+      - AWS_ACCESS_KEY_ID=mykey # fill with your key
+      - AWS_SECRET_ACCESS_KEY=mysecret # fill with your key
+      - AWS_S3_BUCKET_NAME=mybucket # fill with your bucket name
+      - AWS_REGION=ap-southeast-1
 
 volumes:
   postgres_data:
